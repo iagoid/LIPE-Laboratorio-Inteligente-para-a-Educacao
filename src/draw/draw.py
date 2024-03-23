@@ -2,14 +2,9 @@
 # coding: utf-8
 
 import cv2
-import mediapipe as mp
 import numpy as np
-import time
-import pyautogui
-import tkinter as tk
-import matplotlib.pyplot as plt
 from PIL import Image
-
+import matplotlib.image as mpimg
 
 primary_font = cv2.FONT_HERSHEY_SIMPLEX
 second_font = cv2.FONT_HERSHEY_PLAIN
@@ -70,7 +65,6 @@ def show_image(img, img_dir):
     img_overlay_rgba = np.array(Image.open(img_dir))
 
     # Perform blending
-    print(img_dir, img_overlay_rgba)
     alpha_mask = img_overlay_rgba[:, :, 3] / 255.0
     img_result = img[:, :, :3].copy()
     img_overlay = img_overlay_rgba[:, :, :3]

@@ -11,13 +11,12 @@ class SimpleFacerec:
 
         # Resize frame for a faster speed
         self.frame_resizing = 0.25
+        self.load_encoding_images()
 
     def load_encoding_images(self):
         # Load Images
         images_path = glob.glob("images/faces/*.*")
         
-        print(images_path)
-
         for img_path in images_path:
             img = cv2.imread(img_path)
             rgb_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
