@@ -8,6 +8,8 @@ import time
 import pyautogui
 import tkinter as tk
 import matplotlib.pyplot as plt
+from PIL import Image
+
 
 primary_font = cv2.FONT_HERSHEY_SIMPLEX
 second_font = cv2.FONT_HERSHEY_PLAIN
@@ -64,10 +66,33 @@ def draw_points(img, points):
         cv2.circle(img, (cx, cy), 1, (255, 0, 0),
                    cv2.FILLED)  # desenha um círculo
         
-def show_image(img, new_image):
+def show_image(img, img_dir):
+    img_overlay_rgba = np.array(Image.open(img_dir))
 
-    # reading image
-    # new_img_read = cv2.imread(f"../../images/{new_image}")
-    new_img_read = cv2.imread("C:\\crouch.png")
+    # Perform blending
+    print(img_dir, img_overlay_rgba)
+    alpha_mask = img_overlay_rgba[:, :, 3] / 255.0
+    img_result = img[:, :, :3].copy()
+    img_overlay = img_overlay_rgba[:, :, :3]
+    
+    x = 300
+    y = 300
+    
+    y1, y2 = max(0, y), min(img.shape[0], y + img_overlay.shape[0])
+    x1, x2 = max(0, x), min(img.shape[1], x + img_overlay.shape[1])
 
-    # return cv2.subtract(img, new_img_read)
+    # Overlay ranges
+    y1o, y2o = max(0, -y), min(img_overlay.shape[0], img.shape[0] - y)
+    x1o, x2o = max(0, -x), min(img_overlay.shape[1], img.shape[1] - x)
+
+    # Exit if nothing to do
+    if y1 >= y2 or x1 >= x2 or y1o >= y2o or x1o >= x2o:
+        return
+
+    # Blend overlay within the determined ranges
+    img_crop = img[y1:y2, x1:x2]
+    img_overlay_crop = img_overlay[y1o:y2o, x1o:x2o]
+    alpha = alpha_mask[y1o:y2o, x1o:x2o, np.newaxis]
+    alpha_inv = 1.0 - alpha
+
+    img_crop[:] = alpha * img_overlay_crop + alpha_inv * img_crop

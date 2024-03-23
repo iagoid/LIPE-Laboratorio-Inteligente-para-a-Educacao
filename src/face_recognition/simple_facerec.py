@@ -14,7 +14,7 @@ class SimpleFacerec:
 
     def load_encoding_images(self):
         # Load Images
-        images_path = glob.glob("D:/faces/*.*")
+        images_path = glob.glob("images/faces/*.*")
         
         print(images_path)
 
