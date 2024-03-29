@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 from PIL import Image
 import matplotlib.image as mpimg
+import src.constants.colors as colors
 
 primary_font = cv2.FONT_HERSHEY_SIMPLEX
 second_font = cv2.FONT_HERSHEY_PLAIN
@@ -12,9 +13,9 @@ second_font = cv2.FONT_HERSHEY_PLAIN
 
 def draw_rectangle(img, text, text_size, position):
     cv2.rectangle(img, (position[0]-50, position[1]-50), (position[0] +
-                  text_size[0]+50, position[1]+text_size[1]+10), (0, 64, 255), -1)
+                  text_size[0]+50, position[1]+text_size[1]+10), colors.ORANGE, -1)
     cv2.putText(img, text, (position[0], position[1]),
-                primary_font, 1, (255, 255, 255), 2)
+                primary_font, 1, colors.WHITE, 2)
 
 def write_center_screen(img, text):
     img_height = img.shape[0]
@@ -41,13 +42,13 @@ def initial_message(img):
     text_size = cv2.getTextSize(text, second_font, 1, 1)[0]
     textX = int((img_width - text_size[0]) / 2)
     textY = int((img_height - text_size[1] - 20))
-    cv2.putText(img, text, (textX, textY), second_font, 1, (255, 255, 255), 1)
+    cv2.putText(img, text, (textX, textY), second_font, 1, colors.WHITE, 1)
 
 
 def draw_message(img, message):
-    cv2.rectangle(img, (1, 0), (260, 30), (0, 64, 255), -1)
+    cv2.rectangle(img, (1, 0), (260, 30), colors.ORANGE, -1)
     cv2.putText(img, message, (15, 25),
-                cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255), 2)
+                cv2.FONT_HERSHEY_SIMPLEX, 1.0, colors.WHITE, 2)
 
 def draw_points(img, points):
     # um laço de repetição para percorrer todos os pontos e desenhar um círculo e o número do ponto
@@ -57,9 +58,11 @@ def draw_points(img, points):
         # calcula os pontos considerando as dimensões da tela
         cx, cy = int(lm.x * img.shape[1]), int(lm.y * img.shape[0])
         cv2.putText(img, str(int(id)), (cx+5, cy-5), cv2.FONT_HERSHEY_SIMPLEX,
-                    0.3, (255, 0, 0), 1)  # escreve o número do ponto
-        cv2.circle(img, (cx, cy), 1, (255, 0, 0),
+                    0.3, colors.RED, 1)  # escreve o número do ponto
+        cv2.circle(img, (cx, cy), 3, colors.RED,
                    cv2.FILLED)  # desenha um círculo
+        
+        
         
 def show_image(img, img_dir):
     img_overlay_rgba = np.array(Image.open(img_dir))

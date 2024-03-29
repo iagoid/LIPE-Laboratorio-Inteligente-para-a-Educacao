@@ -4,6 +4,7 @@
 import cv2
 import mediapipe as mp
 import face_recognition
+import src.constants.colors as colors
 
 
 def face_detection(img):
@@ -30,7 +31,7 @@ def face_mesh(img):
                 x = int(pt.x * img.shape[1])
                 y = int(pt.y * img.shape[0])
                 
-                cv2.circle(img, (x, y), 3, (100, 100, 0), -1)
+                cv2.circle(img, (x, y), 3, colors.BLUE, -1)
                 
                 
 def face_recognition(img):

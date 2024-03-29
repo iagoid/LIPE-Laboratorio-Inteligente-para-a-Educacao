@@ -4,6 +4,7 @@
 import src.constants.movements as mov
 import src.poses.poses as poses
 from random import *
+from src.draw.draw import show_image
 
 # classe que identifica os movimentos do usuário
 class Identifier(poses.Poses):
@@ -92,7 +93,7 @@ class Identifier(poses.Poses):
         self.standing_shoulderLY = self.shoulderLY
         
         print(mov.MOVEMENTS_ORDER[self.command])
-        # show_image(img, "images/" + mov.MOVEMENTS_IMAGES[command])
+        # show_image(img, "images/" + mov.MOVEMENTS_IMAGES[self.command])
             
     def identify(self):
         match self.command:
