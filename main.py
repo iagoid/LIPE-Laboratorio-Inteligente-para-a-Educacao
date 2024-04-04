@@ -5,24 +5,24 @@ import cv2
 import time
 import src.video_config.video_config as video_config
 import src.identifier.identifier as identifier
-import src.face_recognition.simple_facerec as facerec
 import src.constants.movements as mov
+from pathlib import Path
 
-from src.face_recognition.face_recognition import (
+from src.face_recognition.face_detect import (
     face_detection,
     face_mesh,
 )
+from src.face_recognition.face_recognizer import recognize_faces
 from src.draw.draw import initial_message, draw_message, draw_points, show_image
 from random import *
-from datetime import datetime
+
+DEFAULT_ENCODINGS_PATH = Path("output/encodings.pkl")
 
 screen_name = "Identificador de Movimentos"
 # abre o fluxo de leitura
 # video_conf = video_config.VideoConfig(screen_name, "./images/videomaos.mp4") #lê de um vídeo
 video_conf = video_config.VideoConfig(screen_name)
 video = video_conf.video
-
-my_facerec = facerec.SimpleFacerec()
 
 t1 = time.perf_counter()
 sort_movement = True
@@ -39,7 +39,7 @@ while True:
         break
 
     img = cv2.flip(src, 1)  # impede o espelhamneto da tela
-
+    
     imgRGB = cv2.cvtColor(
         img, cv2.COLOR_BGR2RGB
     )  # converte a cor para RGB (posso também utilizar essa imagem no processamento)
@@ -47,9 +47,7 @@ while True:
     face_detection(img)
     face_mesh(img)
 
-    face_locations, face_names = my_facerec.detect_known_faces(img)
-    if len(face_names) > 0:
-        print(face_names)
+    face_names = recognize_faces(img=img, encodings_location=DEFAULT_ENCODINGS_PATH)
 
     my_identifier.process_image(img)
 
@@ -78,7 +76,7 @@ while True:
     cv2.imshow(screen_name, img)  # exibe a imagem com os pontos na tela
 
     # verifica que teclas foram apertadas
-    tecla = cv2.waitKey(1)  # espera em milisegundos da execução das imagens
+    tecla = cv2.waitKey(33)  # espera em milisegundos da execução das imagens
     if tecla == 27:  # verifica se foi a tecla esc
         break
 

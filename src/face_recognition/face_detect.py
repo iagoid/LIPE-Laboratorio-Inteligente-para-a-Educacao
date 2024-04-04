@@ -3,9 +3,8 @@
 
 import cv2
 import mediapipe as mp
-import face_recognition
 import src.constants.colors as colors
-
+from cvzone.FaceDetectionModule import FaceDetector
 
 def face_detection(img):
     fc_recognition = mp.solutions.face_detection # ativando a solução de reconhecimento de rosto
@@ -17,6 +16,14 @@ def face_detection(img):
     if faces_list.detections: # caso algum rosto tenha sido reconhecido
         for facial_landmarks in faces_list.detections: # para cada rosto que foi reconhecido
             mpDraw.draw_detection(img, facial_landmarks) # desenha o rosto na img
+            
+def face_detection2(img):
+    detector = FaceDetector()
+    _, bboxs = detector.findFaces(img)
+    
+    if bboxs:
+        center = bboxs[0]["center"]
+        cv2.circle(img, center, 5, colors.BLUE, cv2.FILLED)
             
 def face_mesh(img):
     fc_recognition = mp.solutions.face_mesh # ativando a solução de reconhecimento de rosto
@@ -32,15 +39,4 @@ def face_mesh(img):
                 y = int(pt.y * img.shape[0])
                 
                 cv2.circle(img, (x, y), 3, colors.BLUE, -1)
-                
-                
-def face_recognition(img):
-    img_encoding = face_recognition.face_encodings(img)[0]
-    
-    img_to_recognize = cv2.imread("../../images/alan turing.png")
-    rgb_img2 = cv2.cvtColor(img_to_recognize, cv2.COLOR_BGR2RGB)
-    img_rec_encoding = face_recognition.face_encodings(rgb_img2)[0]
-    
-    result = face_recognition.compare_faces([img_encoding], img_rec_encoding)
-    print("Result: ", result)
     
