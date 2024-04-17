@@ -6,18 +6,19 @@ import numpy as np
 from PIL import Image
 import matplotlib.image as mpimg
 import src.constants.colors as colors
+from cv2.typing import MatLike
 
 primary_font = cv2.FONT_HERSHEY_SIMPLEX
 second_font = cv2.FONT_HERSHEY_PLAIN
 
 
-def draw_rectangle(img, text, text_size, position):
+def draw_rectangle(img: MatLike, text: str, text_size, position):
     cv2.rectangle(img, (position[0]-50, position[1]-50), (position[0] +
                   text_size[0]+50, position[1]+text_size[1]+10), colors.ORANGE, -1)
     cv2.putText(img, text, (position[0], position[1]),
                 primary_font, 1, colors.WHITE, 2)
 
-def write_center_screen(img, text):
+def write_center_screen(img:MatLike, text:str):
     img_height = img.shape[0]
     img_width = img.shape[1]
     
@@ -26,7 +27,7 @@ def write_center_screen(img, text):
     textY = int((img_height + text_size[1]) / 2)
     draw_rectangle(img, text, text_size, (textX, textY))
 
-def initial_message(img):
+def initial_message(img: MatLike):
     img_height = img.shape[0]
     img_width = img.shape[1]
 
@@ -45,12 +46,12 @@ def initial_message(img):
     cv2.putText(img, text, (textX, textY), second_font, 1, colors.WHITE, 1)
 
 
-def draw_message(img, message):
+def draw_message(img: MatLike, message:str):
     cv2.rectangle(img, (1, 0), (260, 30), colors.ORANGE, -1)
     cv2.putText(img, message, (15, 25),
                 cv2.FONT_HERSHEY_SIMPLEX, 1.0, colors.WHITE, 2)
 
-def draw_points(img, points):
+def draw_points(img: MatLike, points):
     # um laço de repetição para percorrer todos os pontos e desenhar um círculo e o número do ponto
     for id, lm in enumerate(points.landmark):
         # print(f'ponto: {id}') #imprime os dados do ponto no terminal
@@ -64,7 +65,7 @@ def draw_points(img, points):
         
         
         
-def show_image(img, img_dir):
+def show_image(img: MatLike, img_dir:str):
     img_overlay_rgba = np.array(Image.open(img_dir))
 
     # Perform blending

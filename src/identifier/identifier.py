@@ -5,6 +5,7 @@ import src.constants.movements as mov
 import src.poses.poses as poses
 from random import *
 from src.draw.draw import show_image
+from cv2.typing import MatLike
 
 # classe que identifica os movimentos do usuário
 class Identifier(poses.Poses):
@@ -14,7 +15,7 @@ class Identifier(poses.Poses):
     def __str__(self):
         pass
 
-    def process_image(self, img):
+    def process_image(self, img:MatLike):
         # manda o mediapipe processar a imagem
         result_processing = self.pose.process(img)
         # pego os pontos detectados na imagem
@@ -38,7 +39,7 @@ class Identifier(poses.Poses):
                 self.mpPose.PoseLandmark.LEFT_SHOULDER
             ].y
 
-    def hand_left(self):
+    def hand_left(self)->bool:
         # distancia levando em consideração apenas a altura
         distMaos = abs(self.handRY - self.handLY)
 
@@ -51,7 +52,7 @@ class Identifier(poses.Poses):
 
         return False
 
-    def hand_right(self):
+    def hand_right(self)->bool:
         # distancia levando em consideração apenas a altura
         distMaos = abs(self.handRY - self.handLY)
 
@@ -64,7 +65,7 @@ class Identifier(poses.Poses):
 
         return False
 
-    def jump_identifier(self):
+    def jump_identifier(self)->bool:
         actual_mid_y = (self.shoulderRY + self.shoulderLY) / 2
         standing_mid_y = (self.standing_shoulderRY + self.standing_shoulderLY) / 2
 
@@ -75,7 +76,7 @@ class Identifier(poses.Poses):
 
         return False
 
-    def crouch_identifier(self):
+    def crouch_identifier(self)->bool:
         actual_mid_y = (self.shoulderRY + self.shoulderLY) / 2
         standing_mid_y = (self.standing_shoulderRY + self.standing_shoulderLY) / 2
 
@@ -95,7 +96,7 @@ class Identifier(poses.Poses):
         print(mov.MOVEMENTS_ORDER[self.command])
         # show_image(img, "images/" + mov.MOVEMENTS_IMAGES[self.command])
             
-    def identify(self):
+    def identify(self)->bool:
         match self.command:
             case mov.LEFT_HAND:
                 return self.hand_left()
