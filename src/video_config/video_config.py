@@ -4,16 +4,17 @@
 import cv2
 import tkinter as tk
 
+
 class VideoConfig:
     def __str__(self):
         return f"width {self.screen_width}, height {self.screen_height}"
 
-    def __init__(self, screen_name: str, video_source: int = 0):
+    def __init__(
+        self, screen_name: str, width: int, height: int, video_source: int = 0
+    ):
         # abre o fluxo de leitura
         self.video = cv2.VideoCapture(video_source, cv2.CAP_DSHOW)
-        screen_width = 320
-        screen_height = 240
-        self.set_screen_size(screen_width, screen_height)
+        self.set_screen_size(width, height)
         self.video.set(cv2.CAP_PROP_FPS, 30)
 
         cv2.namedWindow(screen_name)
@@ -25,11 +26,11 @@ class VideoConfig:
         self.video.set(cv2.CAP_PROP_FRAME_WIDTH, screen_width)
         self.video.set(cv2.CAP_PROP_FRAME_HEIGHT, screen_height)
 
-    def video(self)->cv2.VideoCapture:
+    def video(self) -> cv2.VideoCapture:
         return self.video
 
-    def height(self)->int:
+    def height(self) -> int:
         return self.screen_height
 
-    def width(self)->int:
+    def width(self) -> int:
         return self.screen_width

@@ -6,6 +6,7 @@ from collections import Counter
 from pathlib import Path
 from cv2.typing import MatLike 
 import cv2
+import src.constants.constants as constants
 
 import face_recognition
 
@@ -14,7 +15,7 @@ def recognize_faces(
     img: MatLike | str,
     encodings_location: Path,
     model: str = "hog",
-) -> None:
+) -> str:
     """
     Given an unknown image, get the locations and encodings of any faces and
     compares them against the known encodings to find potential matches.
@@ -39,9 +40,9 @@ def recognize_faces(
         input_face_locations, input_face_encodings
     ):
         name = _recognize_face(unknown_encoding, loaded_encodings)
-        print(f'Nome --> {name}')
         if not name:
-            name = "Unknown"
+            name = constants.NAME_UNKNOWN_PLAYER
+        return name
 
 
 def _recognize_face(unknown_encoding, loaded_encodings):

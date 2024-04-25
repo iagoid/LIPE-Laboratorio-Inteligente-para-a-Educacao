@@ -4,4 +4,5 @@
 from src.screens.home import home
 
 if __name__ == "__main__":
-    home.HomeScreen()
+    game = home.Game()
+    game.HomeScreen()

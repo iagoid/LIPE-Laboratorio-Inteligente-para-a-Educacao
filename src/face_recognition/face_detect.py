@@ -38,5 +38,5 @@ def face_mesh(img):
                 x = int(pt.x * img.shape[1])
                 y = int(pt.y * img.shape[0])
                 
-                cv2.circle(img, (x, y), 3, colors.BLUE, -1)
+                cv2.circle(img, (x, y), 2, colors.BLUE, -1)
     

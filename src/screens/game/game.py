@@ -31,10 +31,7 @@ def GameScreen():
     sort_movement = True
     movement_identified = False
 
-    command = 0
-
     my_identifier = identifier.Identifier()
-    
     
     while True:
         check, src = video.read()  # lê o vídeo
