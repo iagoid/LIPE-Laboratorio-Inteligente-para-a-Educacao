@@ -19,6 +19,8 @@ class Game:
             (self.window_surface.get_width(), self.window_surface.get_height()),
             "src/styles/style.json",
         )
+        
+        self.player_screen = players.PlayerScreen()
 
     def HomeScreen(self):
 
@@ -50,22 +52,24 @@ class Game:
             time_delta = clock.tick(10) / 1000.0
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit()
                     is_running = False
-
-                if event.type == pygame_gui.UI_BUTTON_PRESSED:
-                    if event.ui_element == btn_quit:
-                        pygame.quit()
+                elif event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
+                    if event.key == pygame.K_ESCAPE:
                         is_running = False
+     
+                elif event.type == pygame_gui.UI_BUTTON_PRESSED:
+                    if event.ui_element == btn_quit:
+                        is_running = False
+                        
                     elif event.ui_element == btn_play:
                         pygame.display.set_mode(flags=pygame.HIDDEN)
                         game.GameScreen()
                         pygame.display.set_mode(flags=pygame.SHOWN)
 
                     elif event.ui_element == btn_players:
-                        # pygame.display.set_mode(flags=pygame.HIDDEN)
-                        players.PlayersScreen(*pygame.display.get_window_size())
-                        # pygame.display.set_mode(flags=pygame.SHOWN)
+                        pygame.display.set_mode(flags=pygame.HIDDEN)
+                        self.player_screen.Show(*pygame.display.get_window_size())
+                        pygame.display.set_mode(flags=pygame.SHOWN)
 
                 self.manager.process_events(event)
 
@@ -78,3 +82,5 @@ class Game:
             self.manager.draw_ui(self.window_surface)
 
             pygame.display.update()
+            
+        pygame.quit()

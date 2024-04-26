@@ -18,17 +18,14 @@ def SpeakRecongnize(order:str):
     while(True):
         try:
             with sr.Microphone() as mic:
-                rec.adjust_for_ambient_noise(mic)
+                rec.adjust_for_ambient_noise(mic, 0.2)
                 audio = rec.listen(mic)
                 recognized_text = rec.recognize_google(audio, language="pt-BR")
                 recognized_text = recognized_text.lower()
-                SpeakText(recognized_text)
-                
-                # pergunta se está correto
                 return recognized_text
 
         except sr.RequestError as e:
-            SpeakText("Não consegui entender." + order)
+            SpeakText("Repita" + order)
 
         except sr.UnknownValueError:
-            SpeakText("Algo de errado ocorreu." + order)
+            SpeakText("Repita" + order)
