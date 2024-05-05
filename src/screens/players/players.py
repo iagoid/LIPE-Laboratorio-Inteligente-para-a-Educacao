@@ -6,6 +6,7 @@ import src.video_config.video_config as video_config
 from pathlib import Path
 from src.constants.constants import DIRECTORY_CSV_PLAYERS, DIRECTORY_IMAGE_PLAYER
 from threading import Thread, Event
+import schedule
 
 from src.face_recognition.face_detect import (
     face_detection,
@@ -47,6 +48,7 @@ class PlayerScreen:
     def AskQuestion(self) -> None:
         while not self.my_event.is_set():
             time.sleep(3)
+            schSaveImg = schedule.every(1).seconds.do(self.SavePlayerImages)
 
             # TODO: corrigir o evento, ele só para quando chega no proximo loop
             name = ""
@@ -82,6 +84,8 @@ class PlayerScreen:
                     self.is_new_player = False
                     self.SavePlayerCSV()
                     self.player = {}
+                    
+            schedule.cancel_job(schSaveImg)
 
     def GetUserId(self):
         try:
@@ -104,17 +108,17 @@ class PlayerScreen:
             writer = csv.DictWriter(csvfile, fieldnames=FIELD_NAMES, )
             writer.writerow(self.player)
 
-    def SavePlayerImages(self, img: MatLike):
-        faces = face_detection_model(img)
+    def SavePlayerImages(self):
+        faces = face_detection_model(self.img)
 
         directory_save = DIRECTORY_IMAGE_PLAYER + os.sep + str(self.player_id)
         Path(directory_save).mkdir(exist_ok=True)
 
         for x, y, w, h in faces:
-            cv2.rectangle(img, (x, y), (x + w, y + h), (10, 159, 255), 2)
+            cv2.rectangle(self.img, (x, y), (x + w, y + h), (10, 159, 255), 2)
             cv2.imwrite(
                 directory_save + os.sep + str(uuid.uuid1()) + ".jpg",
-                img[y : y + h, x : x + w],
+                self.img[y : y + h, x : x + w],
             )
 
     def Show(self, width: int, height: int):
@@ -129,17 +133,17 @@ class PlayerScreen:
             if not check:
                 break
 
-            img = cv2.flip(src, 1)  # impede o espelhamneto da tela
+            self.img = cv2.flip(src, 1)  # impede o espelhamneto da tela
 
             # Tira a foto do aluno
             # Caso reconhece um novo aluno mostra a foto na tela e pede o nome
             with self.lock:
                 if self.is_new_player:
-                    self.SavePlayerImages(img)
+                    schedule.run_pending()
 
-            face_mesh(img)
+            face_mesh(self.img)
 
-            cv2.imshow(screen_name, img)  # exibe a imagem com os pontos na tela
+            cv2.imshow(screen_name, self.img)  # exibe a imagem com os pontos na tela
 
             # verifica que teclas foram apertadas
             tecla = cv2.waitKey(33)  # espera em milisegundos da execução das imagens
