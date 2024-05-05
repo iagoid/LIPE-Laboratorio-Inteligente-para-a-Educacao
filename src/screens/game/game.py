@@ -24,7 +24,7 @@ screen_name = "Identificador de Movimentos"
 def GameScreen():
     # abre o fluxo de leitura
     # video_conf = video_config.VideoConfig(screen_name, "./images/videomaos.mp4") #lê de um vídeo
-    video_conf = video_config.VideoConfig(screen_name)
+    video_conf = video_config.VideoConfig(screen_name, 900, 650)
     video = video_conf.video
 
     t1 = time.perf_counter()

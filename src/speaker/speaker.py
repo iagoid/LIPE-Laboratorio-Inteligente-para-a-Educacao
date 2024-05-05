@@ -18,8 +18,9 @@ def SpeakRecongnize(order:str):
     while(True):
         try:
             with sr.Microphone() as mic:
+                
                 rec.adjust_for_ambient_noise(mic, 0.2)
-                audio = rec.listen(mic)
+                audio = rec.listen(mic, phrase_time_limit=8)
                 recognized_text = rec.recognize_google(audio, language="pt-BR")
                 recognized_text = recognized_text.lower()
                 return recognized_text

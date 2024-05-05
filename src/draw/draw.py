@@ -94,3 +94,20 @@ def show_image(img: MatLike, img_dir:str):
     alpha_inv = 1.0 - alpha
 
     img_crop[:] = alpha * img_overlay_crop + alpha_inv * img_crop
+    
+    
+def draw_face_positioning(img: MatLike)->MatLike:
+    height, width, _ = img.shape
+    center_coordinates = (width // 2, height // 2)
+    axesLength = (width//3-100, height//3)
+    angle = 90
+    startAngle = 0
+    endAngle = 360
+    thickness = -1
+
+    mask = np.zeros(img.shape[:2], dtype="uint8")
+    cv2.ellipse(
+        mask, center_coordinates, axesLength, angle, startAngle, endAngle, 255, -1
+    )
+    return cv2.bitwise_and(img, img, mask=mask)
+    
