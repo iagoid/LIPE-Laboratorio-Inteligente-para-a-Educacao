@@ -35,7 +35,6 @@ FIELD_NAMES = ["id", "name", "age"]
 
 screen_name = "Identificador de Movimentos"
 
-
 class PlayerScreen:
     def __init__(self) -> None:
         self.is_new_player = False
@@ -53,9 +52,10 @@ class PlayerScreen:
             # TODO: corrigir o evento, ele só para quando chega no proximo loop
             name = ""
             while len(name) == 0 and not self.my_event.is_set():
-                name = speaker.SpeakRecongnize("Qual seu nome?")
+                name = speaker.SpeakRecongnizeVosk("Qual seu nome?", self.my_event)
             speaker.SpeakText(name)
-
+            print(name)
+            
             with self.lock:
                 self.is_new_player = True
 
@@ -65,7 +65,7 @@ class PlayerScreen:
                 not self.my_event.is_set()
                 and counter_age_not_numeric <= 3
             ):
-                text_age = speaker.SpeakRecongnize("Qual sua idade?")
+                text_age = speaker.SpeakRecongnize2("Qual sua idade?", self.my_event)
                 age_list = string_from_numbers(text_age)
                 if age_list:
                     age = age_list[0]
@@ -73,6 +73,7 @@ class PlayerScreen:
                     
                 counter_age_not_numeric += 1
             
+            print(age)
             if not self.my_event.is_set():
                 speaker.SpeakText(age)
                 with self.lock:
