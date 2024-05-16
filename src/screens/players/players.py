@@ -52,7 +52,7 @@ class PlayerScreen:
             # TODO: corrigir o evento, ele só para quando chega no proximo loop
             name = ""
             while len(name) == 0 and not self.my_event.is_set():
-                name = speaker.SpeakRecongnizeVosk("Qual seu nome?", self.my_event)
+                name = speaker.SpeakRecongnize("Qual seu nome?", self.my_event)
             speaker.SpeakText(name)
             print(name)
             
@@ -65,7 +65,7 @@ class PlayerScreen:
                 not self.my_event.is_set()
                 and counter_age_not_numeric <= 3
             ):
-                text_age = speaker.SpeakRecongnize2("Qual sua idade?", self.my_event)
+                text_age = speaker.SpeakRecongnize("Qual sua idade?", self.my_event)
                 age_list = string_from_numbers(text_age)
                 if age_list:
                     age = age_list[0]
