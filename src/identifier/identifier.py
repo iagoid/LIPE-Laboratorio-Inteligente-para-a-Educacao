@@ -4,7 +4,6 @@
 import src.constants.movements as mov
 import src.poses.poses as poses
 from random import *
-from src.draw.draw import show_image
 from cv2.typing import MatLike
 
 # classe que identifica os movimentos do usuário
@@ -94,7 +93,6 @@ class Identifier(poses.Poses):
         self.standing_shoulderLY = self.shoulderLY
         
         print(mov.MOVEMENTS_ORDER[self.command])
-        # show_image(img, "images/" + mov.MOVEMENTS_IMAGES[self.command])
             
     def identify(self)->bool:
         match self.command:

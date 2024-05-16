@@ -7,49 +7,57 @@ from PIL import Image
 import matplotlib.image as mpimg
 import src.constants.colors as colors
 from cv2.typing import MatLike
+import cvzone
+import src.constants.movements as mov
 
 primary_font = cv2.FONT_HERSHEY_SIMPLEX
 second_font = cv2.FONT_HERSHEY_PLAIN
 
 
 def draw_rectangle(img: MatLike, text: str, text_size, position):
-    cv2.rectangle(img, (position[0]-50, position[1]-50), (position[0] +
-                  text_size[0]+50, position[1]+text_size[1]+10), colors.ORANGE, -1)
-    cv2.putText(img, text, (position[0], position[1]),
-                primary_font, 1, colors.WHITE, 2)
+    cv2.rectangle(
+        img,
+        (position[0] - 50, position[1] - 50),
+        (position[0] + text_size[0] + 50, position[1] + text_size[1] + 10),
+        colors.ORANGE,
+        -1,
+    )
+    cv2.putText(img, text, (position[0], position[1]), primary_font, 1, colors.WHITE, 2)
 
-def write_center_screen(img:MatLike, text:str):
+
+def write_center_screen(img: MatLike, text: str):
     img_height = img.shape[0]
     img_width = img.shape[1]
-    
+
     text_size = cv2.getTextSize(text, primary_font, 1, 2)[0]
     textX = int((img_width - text_size[0]) / 2)
     textY = int((img_height + text_size[1]) / 2)
     draw_rectangle(img, text, text_size, (textX, textY))
+
 
 def initial_message(img: MatLike):
     img_height = img.shape[0]
     img_width = img.shape[1]
 
     # escreve titulo
-    title = 'IDENTIFICADOR DE MAOS'
+    title = "IDENTIFICADOR DE MAOS"
     title_size = cv2.getTextSize(title, primary_font, 1, 2)[0]
     titleX = int((img_width - title_size[0]) / 2)
     titleY = int((img_height + title_size[1]) / 2)
     draw_rectangle(img, title, title_size, (titleX, titleY))
 
     # Escreve orientações
-    text = 'Aperte \'esc\' para sair'
+    text = "Aperte 'esc' para sair"
     text_size = cv2.getTextSize(text, second_font, 1, 1)[0]
     textX = int((img_width - text_size[0]) / 2)
     textY = int((img_height - text_size[1] - 20))
     cv2.putText(img, text, (textX, textY), second_font, 1, colors.WHITE, 1)
 
 
-def draw_message(img: MatLike, message:str):
+def draw_message(img: MatLike, message: str):
     cv2.rectangle(img, (1, 0), (260, 30), colors.ORANGE, -1)
-    cv2.putText(img, message, (15, 25),
-                cv2.FONT_HERSHEY_SIMPLEX, 1.0, colors.WHITE, 2)
+    cv2.putText(img, message, (15, 25), cv2.FONT_HERSHEY_SIMPLEX, 1.0, colors.WHITE, 2)
+
 
 def draw_points(img: MatLike, points):
     # um laço de repetição para percorrer todos os pontos e desenhar um círculo e o número do ponto
@@ -58,48 +66,40 @@ def draw_points(img: MatLike, points):
         # print(lm);
         # calcula os pontos considerando as dimensões da tela
         cx, cy = int(lm.x * img.shape[1]), int(lm.y * img.shape[0])
-        cv2.putText(img, str(int(id)), (cx+5, cy-5), cv2.FONT_HERSHEY_SIMPLEX,
-                    0.3, colors.RED, 1)  # escreve o número do ponto
-        cv2.circle(img, (cx, cy), 3, colors.RED,
-                   cv2.FILLED)  # desenha um círculo
-        
-        
-        
-def show_image(img: MatLike, img_dir:str):
-    img_overlay_rgba = np.array(Image.open(img_dir))
+        cv2.putText(
+            img,
+            str(int(id)),
+            (cx + 5, cy - 5),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.3,
+            colors.RED,
+            1,
+        )  # escreve o número do ponto
+        cv2.circle(img, (cx, cy), 3, colors.RED, cv2.FILLED)  # desenha um círculo
 
-    # Perform blending
-    alpha_mask = img_overlay_rgba[:, :, 3] / 255.0
-    img_result = img[:, :, :3].copy()
-    img_overlay = img_overlay_rgba[:, :, :3]
+
+def show_image_movements(img: MatLike, command: int):
+    img_movement = cv2.imread("images/" + mov.MOVEMENTS_IMAGES[command], cv2.IMREAD_UNCHANGED)
+    img_movement = cv2.resize(img_movement, (0,0), None, 0.5, 0.5)
+
+    h_background, w_ackground, _ = img.shape
+    h_img_mov, w_img_mov, _ = img_movement.shape
+
+    pos_x = (w_ackground-w_img_mov)//2
+    pos_y = (h_background-h_img_mov)//2
     
-    x = 300
-    y = 300
-    
-    y1, y2 = max(0, y), min(img.shape[0], y + img_overlay.shape[0])
-    x1, x2 = max(0, x), min(img.shape[1], x + img_overlay.shape[1])
+    order = mov.MOVEMENTS_ORDER[command]
+    text_size = cv2.getTextSize(order, primary_font, 1, 1)[0]
+    textX = int((w_ackground - text_size[0]) / 2)
+    textY = int(pos_y + h_img_mov + 20)
+    cvzone.overlayPNG(img, img_movement, [pos_x, pos_y])
+    cv2.putText(img, order, (textX, textY), primary_font, 1, colors.WHITE, 1)
 
-    # Overlay ranges
-    y1o, y2o = max(0, -y), min(img_overlay.shape[0], img.shape[0] - y)
-    x1o, x2o = max(0, -x), min(img_overlay.shape[1], img.shape[1] - x)
 
-    # Exit if nothing to do
-    if y1 >= y2 or x1 >= x2 or y1o >= y2o or x1o >= x2o:
-        return
-
-    # Blend overlay within the determined ranges
-    img_crop = img[y1:y2, x1:x2]
-    img_overlay_crop = img_overlay[y1o:y2o, x1o:x2o]
-    alpha = alpha_mask[y1o:y2o, x1o:x2o, np.newaxis]
-    alpha_inv = 1.0 - alpha
-
-    img_crop[:] = alpha * img_overlay_crop + alpha_inv * img_crop
-    
-    
-def draw_face_positioning(img: MatLike)->MatLike:
+def draw_face_positioning(img: MatLike) -> MatLike:
     height, width, _ = img.shape
     center_coordinates = (width // 2, height // 2)
-    axesLength = (width//3-100, height//3)
+    axesLength = (width // 3 - 100, height // 3)
     angle = 90
     startAngle = 0
     endAngle = 360
@@ -110,4 +110,3 @@ def draw_face_positioning(img: MatLike)->MatLike:
         mask, center_coordinates, axesLength, angle, startAngle, endAngle, 255, -1
     )
     return cv2.bitwise_and(img, img, mask=mask)
-    

@@ -13,12 +13,18 @@ from src.face_recognition.face_detect import (
     face_mesh,
 )
 from src.face_recognition.face_recognizer import recognize_faces
-from src.draw.draw import initial_message, draw_message, draw_points, show_image
+from src.draw.draw import (
+    initial_message,
+    draw_message,
+    draw_points,
+    show_image_movements,
+)
 from random import *
 
 DEFAULT_ENCODINGS_PATH = Path("output/encodings.pkl")
 
 screen_name = "Identificador de Movimentos"
+
 
 # laço de repetição que fica rodando durante toda aplicação
 def GameScreen():
@@ -32,20 +38,20 @@ def GameScreen():
     movement_identified = False
 
     my_identifier = identifier.Identifier()
-    
+
     while True:
         check, src = video.read()  # lê o vídeo
         if not check:
             break
 
         img = cv2.flip(src, 1)  # impede o espelhamneto da tela
-        
+
         imgRGB = cv2.cvtColor(
             img, cv2.COLOR_BGR2RGB
         )  # converte a cor para RGB (posso também utilizar essa imagem no processamento)
 
-        face_detection(img)
-        face_mesh(img)
+        # face_detection(img)
+        # face_mesh(img)
 
         face_names = recognize_faces(img=img, encodings_location=DEFAULT_ENCODINGS_PATH)
 
@@ -61,11 +67,12 @@ def GameScreen():
             # realiza o sorteio do movimento
             if sort_movement:
                 my_identifier.sort_movement()
+                show_image_movements(img, my_identifier.command)
                 sort_movement = False
                 movement_identified = False
 
             movement_identified = my_identifier.identify()
-            
+
             if movement_identified:
                 draw_message(img, mov.MOVEMENTS_MESSAGE[my_identifier.command])
 
