@@ -2,98 +2,78 @@
 # coding: utf-8
 
 import speech_recognition as sr
-from threading import Event
+from speech_recognition import AudioData
 import json
 from src.speaker.text_reader import SpeakText
 import whisper
 
 
-def SpeakRecongnize(order: str, event: Event) -> str:
-    rec = sr.Recognizer()
+class SpeakerMic:
+    def __init__(self) -> None:
+        self.rec = sr.Recognizer()
 
-    if order:
-        SpeakText(order)
-
-    while True:
+    def SpeakRecongnize(self, order: str) -> str:
         try:
+            if order:
+                SpeakText(order)
             with sr.Microphone() as mic:
-                rec.adjust_for_ambient_noise(mic, 0.2)
-                audio = rec.listen(mic, phrase_time_limit=8)
-
-                if event.is_set():
-                    return ""
-
-                recognized_text = rec.recognize_whisper(audio, language="pt")
-                recognized_text = recognized_text.lower()
-                return recognized_text
+                self.rec.adjust_for_ambient_noise(mic, 0.2)
+                audio = self.rec.listen(mic, phrase_time_limit=8)
+                return self.RecongnizeWhisperSave(audio=audio)
 
         except sr.RequestError:
             return "Não Identificado"
 
         except sr.UnknownValueError:
-            SpeakText("Repita" + order)
+            return "Valor não reconhecido"
 
-
-# para reconhecimentos numéricos do vosk, é necessário gravar o aúdio
-def SpeakRecongnizeVosk(order: str, event: Event) -> str:
-    rec = sr.Recognizer()
-
-    if order:
-        SpeakText(order)
-
-    while True:
+    def RecognizeWhisper(self, audio: AudioData) -> str:
         try:
-            with sr.Microphone() as mic:
-                rec.adjust_for_ambient_noise(mic, 0.2)
-                audio = rec.listen(mic, phrase_time_limit=8)
-
-                if event.is_set():
-                    return ""
-
-                recognized_text = json.loads(rec.recognize_vosk(audio))
-                recognized_text = recognized_text["text"].lower()
-                return recognized_text
+            recognized_text = self.rec.recognize_whisper(
+                audio, language="pt", model="tiny"
+            )
+            recognized_text = recognized_text.lower()
+            return recognized_text
 
         except sr.RequestError:
             return "Não Identificado"
 
         except sr.UnknownValueError:
-            SpeakText("Repita" + order)
+            return "Valor não reconhecido"
 
-
-def SpeakRecongnizeWhisper(order: str, event: Event) -> str:
-    rec = sr.Recognizer()
-
-    if order:
-        SpeakText(order)
-
-    while True:
+    # para reconhecimentos numéricos do vosk, é necessário gravar o aúdio
+    def RecongnizeVosk(self, audio: AudioData) -> str:
         try:
-            with sr.Microphone() as mic:
-                rec.adjust_for_ambient_noise(mic, 0.2)
-                audio = rec.listen(mic, phrase_time_limit=8)
+            recognized_text = json.loads(self.rec.recognize_vosk(audio))
+            recognized_text = recognized_text["text"].lower()
+            return recognized_text
 
-                if event.is_set():
-                    return ""
+        except sr.RequestError:
+            return "Não Identificado"
 
+        except sr.UnknownValueError:
+            return "Valor não reconhecido"
+
+    def RecongnizeWhisperSave(self, audio: AudioData) -> str:
+        try:
             file_name = "audio_file.wav"
             with open(file_name, "wb") as file:
                 file.write(audio.get_wav_data())
 
-            audio = whisper.load_audio(file_name)
-            audio = whisper.pad_or_trim(audio)
+            audio_loaded = whisper.load_audio(file_name)
+            audio_loaded = whisper.pad_or_trim(audio_loaded)
 
             model = whisper.load_model("tiny")
             result = model.transcribe(
-                audio,
+                audio_loaded,
                 fp16=False,
                 language="pt",
                 verbose=True,
                 patience=2,
                 beam_size=5,
             )
-            
+
             return result["text"]
 
         except:
-            print("Texto não reconhecido")
+            return "Texto não reconhecido"

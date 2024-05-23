@@ -24,6 +24,7 @@ import csv
 import pandas as pd
 import math
 from src.speaker.text_reader import SpeakText
+from src.speaker.speaker import SpeakerMic
 import shutil
 
 DEFAULT_ENCODINGS_PATH = Path("output/encodings.pkl")
@@ -42,6 +43,8 @@ class PlayerScreen:
         self.next_player = False
 
     def AskQuestion(self) -> None:
+        speaker_mic = SpeakerMic()
+        
         while not self.my_event.is_set():
             time.sleep(3)
             with self.lock:
@@ -61,8 +64,8 @@ class PlayerScreen:
 
             age = 0
             counter_age_not_numeric = 1
-            while not self.my_event.is_set() and counter_age_not_numeric <= 3:
-                text_age = speaker.SpeakRecongnizeWhisper("Qual sua idade?", self.my_event)
+            while counter_age_not_numeric <= 3:
+                text_age = speaker_mic.SpeakRecongnize("Qual sua idade?")
                 print(text_age)
                 
                 age_list = string_from_numbers(text_age)
