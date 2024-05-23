@@ -2,7 +2,7 @@ import argparse
 import pickle
 from pathlib import Path
 import cv2
-from face_recognizer import recognize_faces
+from face_recognizer import FaceRecognizer
 
 import face_recognition
 
@@ -70,9 +70,10 @@ def validate(model: str = "hog"):
     Runs recognize_faces on a set of images with known faces to validate
     known encodings.
     """
+    my_face_recognizer = FaceRecognizer(encodings_location=DEFAULT_ENCODINGS_PATH)
     for filepath in Path(PATH_VALIDATION).rglob("*"):
         if filepath.is_file():
-            recognize_faces(
+            my_face_recognizer.recognize_faces(
                 img=str(filepath.absolute()), model=model
             )
 
@@ -85,6 +86,7 @@ if __name__ == "__main__":
     if args.test:
         video = cv2.VideoCapture(0) #lê da webcam
         check, img = video.read() #lê o vídeo
-        recognize_faces(img=img, model=args.m, encodings_location=DEFAULT_ENCODINGS_PATH)
+        my_face_recognizer = FaceRecognizer(encodings_location=DEFAULT_ENCODINGS_PATH)
+        my_face_recognizer.recognize_faces(img=img, model=args.m)
         video.release()
         cv2.destroyAllWindows()

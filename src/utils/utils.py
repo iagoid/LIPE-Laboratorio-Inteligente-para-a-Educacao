@@ -31,9 +31,10 @@ def number_in_words_2_numeric(text: str) -> int:
                         return kt + ku
             return kt
 
-    # verifica valores de 1 - 9
+    # verifica valores da idade minima - 9
     for ku, vu in units.items():
-        if words.count(vu):
-            return ku
+        if ku > 4: # idade minima
+            if words.count(vu):
+                return ku
 
     return 0

@@ -12,7 +12,7 @@ from src.face_recognition.face_detect import (
     face_detection,
     face_mesh,
 )
-from src.face_recognition.face_recognizer import recognize_faces
+from src.face_recognition.face_recognizer import FaceRecognizer
 from src.draw.draw import (
     initial_message,
     draw_message,
@@ -30,7 +30,7 @@ screen_name = "Identificador de Movimentos"
 def GameScreen():
     # abre o fluxo de leitura
     # video_conf = video_config.VideoConfig(screen_name, "./images/videomaos.mp4") #lê de um vídeo
-    video_conf = video_config.VideoConfig(screen_name, 900, 650)
+    video_conf = video_config.VideoConfig(screen_name, 550, 300)
     video = video_conf.video
 
     t1 = time.perf_counter()
@@ -38,6 +38,7 @@ def GameScreen():
     movement_identified = False
 
     my_identifier = identifier.Identifier()
+    my_face_recognizer = FaceRecognizer(encodings_location=DEFAULT_ENCODINGS_PATH)
 
     while True:
         check, src = video.read()  # lê o vídeo
@@ -53,8 +54,9 @@ def GameScreen():
         # face_detection(img)
         # face_mesh(img)
 
-        face_names = recognize_faces(img=img, encodings_location=DEFAULT_ENCODINGS_PATH)
-
+        face_names = my_face_recognizer.recognize_faces(img=img)
+        print(face_names)
+        
         my_identifier.process_image(img)
 
         if my_identifier.points:

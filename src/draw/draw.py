@@ -9,9 +9,7 @@ import src.constants.colors as colors
 from cv2.typing import MatLike
 import cvzone
 import src.constants.movements as mov
-
-primary_font = cv2.FONT_HERSHEY_SIMPLEX
-second_font = cv2.FONT_HERSHEY_PLAIN
+from src.constants.fonts import PRIMARY_FONT, SECONDARY_FONT
 
 
 def draw_rectangle(img: MatLike, text: str, text_size, position):
@@ -22,14 +20,14 @@ def draw_rectangle(img: MatLike, text: str, text_size, position):
         colors.ORANGE,
         -1,
     )
-    cv2.putText(img, text, (position[0], position[1]), primary_font, 1, colors.WHITE, 2)
+    cv2.putText(img, text, (position[0], position[1]), PRIMARY_FONT, 1, colors.WHITE, 2)
 
 
 def write_center_screen(img: MatLike, text: str):
     img_height = img.shape[0]
     img_width = img.shape[1]
 
-    text_size = cv2.getTextSize(text, primary_font, 1, 2)[0]
+    text_size = cv2.getTextSize(text, PRIMARY_FONT, 1, 2)[0]
     textX = int((img_width - text_size[0]) / 2)
     textY = int((img_height + text_size[1]) / 2)
     draw_rectangle(img, text, text_size, (textX, textY))
@@ -41,17 +39,17 @@ def initial_message(img: MatLike):
 
     # escreve titulo
     title = "IDENTIFICADOR DE MAOS"
-    title_size = cv2.getTextSize(title, primary_font, 1, 2)[0]
+    title_size = cv2.getTextSize(title, PRIMARY_FONT, 1, 2)[0]
     titleX = int((img_width - title_size[0]) / 2)
     titleY = int((img_height + title_size[1]) / 2)
     draw_rectangle(img, title, title_size, (titleX, titleY))
 
     # Escreve orientações
     text = "Aperte 'esc' para sair"
-    text_size = cv2.getTextSize(text, second_font, 1, 1)[0]
+    text_size = cv2.getTextSize(text, SECONDARY_FONT, 1, 1)[0]
     textX = int((img_width - text_size[0]) / 2)
     textY = int((img_height - text_size[1] - 20))
-    cv2.putText(img, text, (textX, textY), second_font, 1, colors.WHITE, 1)
+    cv2.putText(img, text, (textX, textY), SECONDARY_FONT, 1, colors.WHITE, 1)
 
 
 def draw_message(img: MatLike, message: str):
@@ -79,21 +77,23 @@ def draw_points(img: MatLike, points):
 
 
 def show_image_movements(img: MatLike, command: int):
-    img_movement = cv2.imread("images/" + mov.MOVEMENTS_IMAGES[command], cv2.IMREAD_UNCHANGED)
-    img_movement = cv2.resize(img_movement, (0,0), None, 0.5, 0.5)
+    img_movement = cv2.imread(
+        "images/" + mov.MOVEMENTS_IMAGES[command], cv2.IMREAD_UNCHANGED
+    )
+    img_movement = cv2.resize(img_movement, (0, 0), None, 0.5, 0.5)
 
     h_background, w_ackground, _ = img.shape
     h_img_mov, w_img_mov, _ = img_movement.shape
 
-    pos_x = (w_ackground-w_img_mov)//2
-    pos_y = (h_background-h_img_mov)//2
-    
+    pos_x = (w_ackground - w_img_mov) // 2
+    pos_y = (h_background - h_img_mov) // 2
+
     order = mov.MOVEMENTS_ORDER[command]
-    text_size = cv2.getTextSize(order, primary_font, 1, 1)[0]
+    text_size = cv2.getTextSize(order, PRIMARY_FONT, 1, 1)[0]
     textX = int((w_ackground - text_size[0]) / 2)
     textY = int(pos_y + h_img_mov + 20)
     cvzone.overlayPNG(img, img_movement, [pos_x, pos_y])
-    cv2.putText(img, order, (textX, textY), primary_font, 1, colors.WHITE, 1)
+    cv2.putText(img, order, (textX, textY), PRIMARY_FONT, 1, colors.WHITE, 1)
 
 
 def draw_face_positioning(img: MatLike) -> MatLike:
@@ -110,3 +110,10 @@ def draw_face_positioning(img: MatLike) -> MatLike:
         mask, center_coordinates, axesLength, angle, startAngle, endAngle, 255, -1
     )
     return cv2.bitwise_and(img, img, mask=mask)
+
+
+def NextPlayer(img: MatLike)-> MatLike:
+    cv2.putText(
+        img, "PRÓXIMO JOGADOR", (10, 500), PRIMARY_FONT, 4, (255, 255, 255), 2, cv2.LINE_AA
+    )
+    return img

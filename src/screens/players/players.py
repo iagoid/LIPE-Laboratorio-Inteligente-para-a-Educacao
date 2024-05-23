@@ -7,28 +7,24 @@ from pathlib import Path
 from src.constants.constants import DIRECTORY_CSV_PLAYERS, DIRECTORY_IMAGE_PLAYER
 from threading import Thread, Event
 import schedule
-
 from src.face_recognition.face_detect import (
-    face_detection,
     face_mesh,
     face_detection_model,
 )
-from src.face_recognition.face_recognizer import recognize_faces
 from random import *
+from src.draw.draw import NextPlayer
 from src.speaker import speaker
-from src.draw.draw import draw_face_positioning
-from src.utils.utils import string_from_numbers
+from src.utils.utils import string_from_numbers, number_in_words_2_numeric
 from threading import Thread, Lock
-from multiprocessing.pool import ThreadPool
 import time
-from cv2.typing import MatLike
 import os
 import uuid
 from pathlib import Path
 import csv
 import pandas as pd
-import math 
-
+import math
+from src.speaker.text_reader import SpeakText
+import shutil
 
 DEFAULT_ENCODINGS_PATH = Path("output/encodings.pkl")
 FIELD_NAMES = ["id", "name", "age"]
@@ -43,37 +39,44 @@ class PlayerScreen:
         self.lock = Lock()
         self.my_event = Event()
         self.GetUserId()
+        self.next_player = False
 
     def AskQuestion(self) -> None:
         while not self.my_event.is_set():
             time.sleep(3)
+            with self.lock:
+                self.next_player = False
+            
             schSaveImg = schedule.every(1).seconds.do(self.SavePlayerImages)
 
             # TODO: corrigir o evento, ele só para quando chega no proximo loop
-            name = ""
-            while len(name) == 0 and not self.my_event.is_set():
-                name = speaker.SpeakRecongnize("Qual seu nome?", self.my_event)
-            speaker.SpeakText(name)
-            print(name)
-            
+            name = "NÃO IMPLEMENTADO"
+            # while len(name) == 0 and not self.my_event.is_set():
+            #     name = speaker.SpeakRecongnize("Qual seu nome?", self.my_event)
+            # speaker.SpeakText(name)
+            # print(name)
+
             with self.lock:
                 self.is_new_player = True
 
             age = 0
             counter_age_not_numeric = 1
-            while (
-                not self.my_event.is_set()
-                and counter_age_not_numeric <= 3
-            ):
-                text_age = speaker.SpeakRecongnize("Qual sua idade?", self.my_event)
+            while not self.my_event.is_set() and counter_age_not_numeric <= 3:
+                text_age = speaker.SpeakRecongnizeWhisper("Qual sua idade?", self.my_event)
+                print(text_age)
+                
                 age_list = string_from_numbers(text_age)
+                converted_age = number_in_words_2_numeric(text_age)
+                
                 if age_list:
                     age = age_list[0]
                     break
-                    
+                elif converted_age:
+                    age = converted_age
+                    break
+
                 counter_age_not_numeric += 1
-            
-            print(age)
+
             if not self.my_event.is_set():
                 speaker.SpeakText(age)
                 with self.lock:
@@ -85,8 +88,13 @@ class PlayerScreen:
                     self.is_new_player = False
                     self.SavePlayerCSV()
                     self.player = {}
-                    
+
             schedule.cancel_job(schSaveImg)
+            
+            with self.lock:
+                self.next_player = True
+
+            SpeakText("Próximo Jogador")
 
     def GetUserId(self):
         try:
@@ -99,14 +107,19 @@ class PlayerScreen:
             self.player_id = max_size + 1
         except:
             self.player_id = 1
-            with open(DIRECTORY_CSV_PLAYERS, "a", newline='', encoding="utf-8") as csvfile:
+            with open(
+                DIRECTORY_CSV_PLAYERS, "a", newline="", encoding="utf-8"
+            ) as csvfile:
                 writer = csv.writer(csvfile)
                 writer.writerow(FIELD_NAMES)
                 
 
     def SavePlayerCSV(self):
-        with open(DIRECTORY_CSV_PLAYERS, "a", newline='', encoding="utf-8") as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=FIELD_NAMES, )
+        with open(DIRECTORY_CSV_PLAYERS, "a", newline="", encoding="utf-8") as csvfile:
+            writer = csv.DictWriter(
+                csvfile,
+                fieldnames=FIELD_NAMES,
+            )
             writer.writerow(self.player)
 
     def SavePlayerImages(self):
@@ -116,7 +129,6 @@ class PlayerScreen:
         Path(directory_save).mkdir(exist_ok=True)
 
         for x, y, w, h in faces:
-            cv2.rectangle(self.img, (x, y), (x + w, y + h), (10, 159, 255), 2)
             cv2.imwrite(
                 directory_save + os.sep + str(uuid.uuid1()) + ".jpg",
                 self.img[y : y + h, x : x + w],
@@ -142,8 +154,11 @@ class PlayerScreen:
                 if self.is_new_player:
                     schedule.run_pending()
 
-            face_mesh(self.img)
-
+            # face_mesh(self.img)
+            with self.lock:
+                if self.next_player:
+                    self.img = NextPlayer(self.img)
+                    
             cv2.imshow(screen_name, self.img)  # exibe a imagem com os pontos na tela
 
             # verifica que teclas foram apertadas
