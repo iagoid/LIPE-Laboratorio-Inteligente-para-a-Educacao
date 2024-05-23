@@ -11,7 +11,7 @@ def string_from_numbers(text: str) -> list[int]:
 
 def number_in_words_2_numeric(text: str) -> int:
     # remove tudo o que não é alfanumérico
-    clean_string = re.sub("[^0-9a-zA-Z\s]+", "", text)
+    clean_string = re.sub(r'[^0-9a-zA-ZÊê\s]+', "", text)
 
     words = clean_string.upper().split()
 
@@ -24,7 +24,10 @@ def number_in_words_2_numeric(text: str) -> int:
     for kt, vt in tens.items():
         if words.count(vt):
             position = words.index(vt)
-
+            
+            if position == len(words)-1:
+                return kt
+            
             if words[position + 1] == "E":
                 for ku, vu in units.items():
                     if words[position + 1:].count(vu):
