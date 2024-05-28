@@ -4,11 +4,10 @@
 import cv2
 import src.video_config.video_config as video_config
 from pathlib import Path
-from src.constants.constants import DIRECTORY_CSV_PLAYERS, DIRECTORY_IMAGE_PLAYER
+from src.constants.constants import DIRECTORY_IMAGE_PLAYER
 from threading import Thread, Event
 import schedule
 from src.face_recognition.face_detect import (
-    face_mesh,
     face_detection_model,
 )
 from random import *
@@ -20,26 +19,21 @@ import time
 import os
 import uuid
 from pathlib import Path
-import csv
-import pandas as pd
-import math
 from src.speaker.text_reader import SpeakText
 from src.speaker.speaker import SpeakerMic
-import shutil
+from database.students.students import select_max_id, add_student
 
 DEFAULT_ENCODINGS_PATH = Path("output/encodings.pkl")
-FIELD_NAMES = ["id", "name", "age"]
 
 screen_name = "Identificador de Movimentos"
 
 class PlayerScreen:
     def __init__(self) -> None:
         self.is_new_player = False
-        self.player_id = 1
         self.player = {}
         self.lock = Lock()
         self.my_event = Event()
-        self.GetUserId()
+        self.GetLastUserId()
         self.next_player = False
 
     def AskQuestion(self) -> None:
@@ -63,8 +57,7 @@ class PlayerScreen:
                 self.is_new_player = True
 
             age = 0
-            counter_age_not_numeric = 1
-            while counter_age_not_numeric <= 3:
+            for _ in range(3): # realiza 3 tentativas
                 text_age = speaker_mic.SpeakRecongnize("Qual sua idade?")
                 print(text_age)
                 
@@ -78,8 +71,6 @@ class PlayerScreen:
                     age = converted_age
                     break
 
-                counter_age_not_numeric += 1
-
             if not self.my_event.is_set():
                 speaker.SpeakText(age)
                 with self.lock:
@@ -87,43 +78,25 @@ class PlayerScreen:
                     self.player["id"] = self.player_id
                     self.player["name"] = name
                     self.player["age"] = age
-                    self.player_id += 1
                     self.is_new_player = False
-                    self.SavePlayerCSV()
+                    self.SavePlayer()
                     self.player = {}
 
             schedule.cancel_job(schSaveImg)
+            
+            self.GetLastUserId()
             
             with self.lock:
                 self.next_player = True
 
             SpeakText("Próximo Jogador")
 
-    def GetUserId(self):
-        try:
-            df = pd.read_csv(DIRECTORY_CSV_PLAYERS, header=0)
-            max_size = df["id"].max()
-            
-            if math.isnan(max_size):
-                max_size = 1
+    def GetLastUserId(self):
+        self.player_id = select_max_id() + 1
 
-            self.player_id = max_size + 1
-        except:
-            self.player_id = 1
-            with open(
-                DIRECTORY_CSV_PLAYERS, "a", newline="", encoding="utf-8"
-            ) as csvfile:
-                writer = csv.writer(csvfile)
-                writer.writerow(FIELD_NAMES)
-                
+    def SavePlayer(self):
+        add_student(student=(self.player["age"], ))
 
-    def SavePlayerCSV(self):
-        with open(DIRECTORY_CSV_PLAYERS, "a", newline="", encoding="utf-8") as csvfile:
-            writer = csv.DictWriter(
-                csvfile,
-                fieldnames=FIELD_NAMES,
-            )
-            writer.writerow(self.player)
 
     def SavePlayerImages(self):
         faces = face_detection_model(self.img)
