@@ -3,7 +3,7 @@
 
 import cv2
 import time
-import src.video_config.video_config as video_config
+from src.video_config.video_config import VideoConfig
 import src.identifier.identifier as identifier
 import src.constants.movements as mov
 from pathlib import Path
@@ -29,9 +29,9 @@ screen_name = "Identificador de Movimentos"
 # laço de repetição que fica rodando durante toda aplicação
 def GameScreen():
     # abre o fluxo de leitura
-    # video_conf = video_config.VideoConfig(screen_name, "./images/videomaos.mp4") #lê de um vídeo
-    video_conf = video_config.VideoConfig(screen_name, 550, 300)
-    video = video_conf.video
+    # video_conf = VideoConfig(screen_name, "./images/videomaos.mp4") #lê de um vídeo
+    video_conf = VideoConfig(screen_name, 550, 300)
+    video_conf.start()
 
     t1 = time.perf_counter()
     sort_movement = True
@@ -41,11 +41,10 @@ def GameScreen():
     my_face_recognizer = FaceRecognizer(encodings_location=DEFAULT_ENCODINGS_PATH)
 
     while True:
-        check, src = video.read()  # lê o vídeo
-        if not check:
+        if video_conf.stopped is True:
             break
-
-        img = cv2.flip(src, 1)  # impede o espelhamneto da tela
+        else:
+            img = video_conf.read()
 
         imgRGB = cv2.cvtColor(
             img, cv2.COLOR_BGR2RGB
@@ -89,5 +88,5 @@ def GameScreen():
         if tecla == 27:  # verifica se foi a tecla esc
             break
 
-    video.release()
+    video_conf.stop()
     cv2.destroyAllWindows()

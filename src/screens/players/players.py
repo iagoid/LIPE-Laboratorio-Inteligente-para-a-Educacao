@@ -2,7 +2,7 @@
 # coding: utf-8
 
 import cv2
-import src.video_config.video_config as video_config
+from src.video_config.video_config import VideoConfig
 from pathlib import Path
 from src.constants.constants import DIRECTORY_IMAGE_PLAYER
 from threading import Thread, Event
@@ -45,7 +45,9 @@ class PlayerScreen:
             with self.lock:
                 self.next_player = False
 
-            self.schIsaveImgProfile = schedule.every(1).seconds.do(self.SaveProfilePicture)
+            self.schIsaveImgProfile = schedule.every(1).seconds.do(
+                self.SaveProfilePicture
+            )
             schSaveImg = schedule.every(1).seconds.do(self.SavePlayerImages)
 
             # TODO: corrigir o evento, ele só para quando chega no proximo loop
@@ -134,18 +136,17 @@ class PlayerScreen:
             )
 
     def Show(self, width: int, height: int):
-        video_conf = video_config.VideoConfig(screen_name, width=width, height=height)
-        video = video_conf.video
-
+        video_conf = VideoConfig(screen_name, width=width, height=height)
+        video_conf.start()
+        
         t1 = Thread(target=self.AskQuestion)
         t1.start()
 
         while True:
-            check, src = video.read()  # lê o vídeo
-            if not check:
+            if video_conf.stopped is True:
                 break
-
-            self.img = cv2.flip(src, 1)  # impede o espelhamneto da tela
+            else:
+                self.img = video_conf.read()
 
             # Tira a foto do aluno
             # Caso reconhece um novo aluno mostra a foto na tela e pede o nome
@@ -166,5 +167,5 @@ class PlayerScreen:
                 self.my_event.set()
                 break
 
-        video.release()
+        video_conf.stop()
         cv2.destroyAllWindows()
