@@ -4,7 +4,7 @@ import os
 dir = os.path.dirname(__file__)
 filename = os.path.join(dir, '../database.db')
 
-def add_student(student)->int:
+def add_student(student)->int | None:
     try:
         with sqlite3.connect(filename) as conn:
             sql = "INSERT INTO students(age) VALUES(?)"
@@ -34,6 +34,10 @@ def select_max_id()->int:
             cur = conn.cursor()
             cur.execute("SELECT MAX(id) FROM students")
             row = cur.fetchone()
+            
+            if row[0] is None:
+                return 0
+            
             return row[0]
     except sqlite3.Error as e:
         print(e)

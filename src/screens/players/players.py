@@ -27,6 +27,7 @@ DEFAULT_ENCODINGS_PATH = Path("output/encodings.pkl")
 
 screen_name = "Identificador de Movimentos"
 
+
 class PlayerScreen:
     def __init__(self) -> None:
         self.is_new_player = False
@@ -38,12 +39,13 @@ class PlayerScreen:
 
     def AskQuestion(self) -> None:
         speaker_mic = SpeakerMic()
-        
+
         while not self.my_event.is_set():
             time.sleep(3)
             with self.lock:
                 self.next_player = False
-            
+
+            self.schIsaveImgProfile = schedule.every(1).seconds.do(self.SaveProfilePicture)
             schSaveImg = schedule.every(1).seconds.do(self.SavePlayerImages)
 
             # TODO: corrigir o evento, ele só para quando chega no proximo loop
@@ -57,13 +59,13 @@ class PlayerScreen:
                 self.is_new_player = True
 
             age = 0
-            for _ in range(3): # realiza 3 tentativas
+            for _ in range(3):  # realiza 3 tentativas
                 text_age = speaker_mic.SpeakRecongnize("Qual sua idade?")
                 print(text_age)
-                
+
                 age_list = string_from_numbers(text_age)
                 converted_age = number_in_words_2_numeric(text_age)
-                
+
                 if age_list:
                     age = age_list[0]
                     break
@@ -83,20 +85,41 @@ class PlayerScreen:
                     self.player = {}
 
             schedule.cancel_job(schSaveImg)
-            
+
             self.GetLastUserId()
-            
+
             with self.lock:
                 self.next_player = True
 
             SpeakText("Próximo Jogador")
 
     def GetLastUserId(self):
-        self.player_id = select_max_id() + 1
+        last_id = select_max_id()
+        self.player_id = last_id + 1
 
     def SavePlayer(self):
-        add_student(student=(self.player["age"], ))
+        add_student(student=(self.player["age"],))
 
+    def SaveProfilePicture(self):
+        faces = face_detection_model(self.img)
+
+        directory_save = DIRECTORY_IMAGE_PLAYER + os.sep + str(self.player_id)
+        Path(directory_save).mkdir(exist_ok=True)
+
+        for x, y, w, h in faces:
+            pY = int(y // 1.8)
+            pX = int(x // 1.5)
+
+            height = int(h * 1.8)
+            width = int(w * 1.5)
+
+            cv2.imwrite(
+                directory_save + os.sep + "profile.jpg",
+                self.img[pY : y + height, pX : x + width],
+            )
+
+            schedule.cancel_job(self.schIsaveImgProfile)
+            break
 
     def SavePlayerImages(self):
         faces = face_detection_model(self.img)
@@ -134,7 +157,7 @@ class PlayerScreen:
             with self.lock:
                 if self.next_player:
                     self.img = NextPlayer(self.img)
-                    
+
             cv2.imshow(screen_name, self.img)  # exibe a imagem com os pontos na tela
 
             # verifica que teclas foram apertadas
