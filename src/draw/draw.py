@@ -3,13 +3,13 @@
 
 import cv2
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFont, ImageDraw
 import matplotlib.image as mpimg
 import src.constants.colors as colors
 from cv2.typing import MatLike
 import cvzone
 import src.constants.movements as mov
-from src.constants.fonts import PRIMARY_FONT, SECONDARY_FONT
+from src.constants.fonts import PRIMARY_FONT, SECONDARY_FONT, FONT_SUPER_SQUAD_PATH
 
 
 def draw_rectangle(img: MatLike, text: str, text_size, position):
@@ -112,8 +112,21 @@ def draw_face_positioning(img: MatLike) -> MatLike:
     return cv2.bitwise_and(img, img, mask=mask)
 
 
-def NextPlayer(img: MatLike)-> MatLike:
-    cv2.putText(
-        img, "PRÓXIMO JOGADOR", (10, 500), PRIMARY_FONT, 4, (255, 255, 255), 2, cv2.LINE_AA
-    )
-    return img
+def NextPlayer(img: MatLike) -> MatLike:
+    img_height, img_width, _ = img.shape
+    text = "PRÓXIMO JOGADOR"
+
+    pil_image = Image.fromarray(img)
+
+    # Draw non-ascii text onto image
+    font = ImageFont.truetype(FONT_SUPER_SQUAD_PATH, size=40)
+    draw = ImageDraw.Draw(pil_image)
+
+    _, _, text_width, text_height = font.getbbox(text=text)
+    textX = int((img_width - text_width) / 2)
+    textY = int((img_height - text_height - 50))
+    draw.text((textX, textY), text, font=font)
+
+    image = np.asarray(pil_image)
+    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    return image

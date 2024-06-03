@@ -19,7 +19,7 @@ class Game:
             (self.window_surface.get_width(), self.window_surface.get_height()),
             "src/styles/style.json",
         )
-        
+
         self.player_screen = players.PlayerScreen()
 
     def HomeScreen(self):
@@ -56,11 +56,11 @@ class Game:
                 elif event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
                     if event.key == pygame.K_ESCAPE:
                         is_running = False
-     
+
                 elif event.type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == btn_quit:
                         is_running = False
-                        
+
                     elif event.ui_element == btn_play:
                         pygame.display.set_mode(flags=pygame.HIDDEN)
                         game.GameScreen()
@@ -82,5 +82,5 @@ class Game:
             self.manager.draw_ui(self.window_surface)
 
             pygame.display.update()
-            
+
         pygame.quit()

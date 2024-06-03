@@ -23,9 +23,11 @@
             "active_text_shadow": "#10101070"
         },
         "font": {
+            "name": "super_squad",
             "size": "30",
             "bold": "1",
-            "italic": "0"
+            "italic": "0",
+            "regular_path": "src/screens/fonts/Super Squad.ttf"
         }
         
     }

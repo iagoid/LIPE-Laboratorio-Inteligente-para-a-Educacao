@@ -62,6 +62,10 @@ class PlayerScreen:
 
             age = 0
             for _ in range(3):  # realiza 3 tentativas
+                if self.my_event.is_set():
+                    schedule.cancel_job(schSaveImg)
+                    return
+                
                 text_age = speaker_mic.SpeakRecongnize("Qual sua idade?")
                 print(text_age)
 
@@ -74,17 +78,20 @@ class PlayerScreen:
                 elif converted_age:
                     age = converted_age
                     break
-
-            if not self.my_event.is_set():
-                speaker.SpeakText(age)
-                with self.lock:
-                    self.player = {}
-                    self.player["id"] = self.player_id
-                    self.player["name"] = name
-                    self.player["age"] = age
-                    self.is_new_player = False
-                    self.SavePlayer()
-                    self.player = {}
+            
+            if self.my_event.is_set():
+                schedule.cancel_job(schSaveImg)
+                return
+            
+            speaker.SpeakText(age)
+            with self.lock:
+                self.player = {}
+                self.player["id"] = self.player_id
+                self.player["name"] = name
+                self.player["age"] = age
+                self.is_new_player = False
+                self.SavePlayer()
+                self.player = {}
 
             schedule.cancel_job(schSaveImg)
 
@@ -93,6 +100,8 @@ class PlayerScreen:
             with self.lock:
                 self.next_player = True
 
+            if self.my_event.is_set():
+                return
             SpeakText("Próximo Jogador")
 
     def GetLastUserId(self):
