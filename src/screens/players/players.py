@@ -5,7 +5,7 @@ import cv2
 from src.video_config.video_config import VideoConfig
 from pathlib import Path
 from src.constants.constants import DIRECTORY_IMAGE_PLAYER
-from threading import Thread, Event
+from threading import Thread, Event, Lock
 import schedule
 from src.face_recognition.face_detect import (
     face_detection_model,
@@ -14,7 +14,6 @@ from random import *
 from src.draw.draw import NextPlayer
 from src.speaker import speaker
 from src.utils.utils import string_from_numbers, number_in_words_2_numeric
-from threading import Thread, Lock
 import time
 import os
 import uuid
@@ -61,12 +60,13 @@ class PlayerScreen:
                 self.is_new_player = True
 
             age = 0
+            order = "Qual sua idade?"
             for _ in range(3):  # realiza 3 tentativas
                 if self.my_event.is_set():
                     schedule.cancel_job(schSaveImg)
                     return
                 
-                text_age = speaker_mic.SpeakRecongnize("Qual sua idade?")
+                text_age = speaker_mic.SpeakRecongnize(order)
                 print(text_age)
 
                 age_list = string_from_numbers(text_age)
@@ -78,6 +78,8 @@ class PlayerScreen:
                 elif converted_age:
                     age = converted_age
                     break
+                
+                order = "Não entendi. Qual sua idade?"
             
             if self.my_event.is_set():
                 schedule.cancel_job(schSaveImg)
@@ -148,8 +150,8 @@ class PlayerScreen:
         video_conf = VideoConfig(screen_name, width=width, height=height)
         video_conf.start()
         
-        t1 = Thread(target=self.AskQuestion)
-        t1.start()
+        thread_question = Thread(target=self.AskQuestion)
+        thread_question.start()
 
         while True:
             if video_conf.stopped is True:
@@ -175,6 +177,7 @@ class PlayerScreen:
             if tecla == 27:  # verifica se foi a tecla esc
                 self.my_event.set()
                 break
-
+        
+        thread_question.join()
         video_conf.stop()
         cv2.destroyAllWindows()

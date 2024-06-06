@@ -11,7 +11,7 @@ import cv2
 import src.constants.constants as constants
 
 import face_recognition
-
+import time
 
 class FaceRecognizer:
     def __init__(self, encodings_location: Path):
@@ -27,16 +27,18 @@ class FaceRecognizer:
         img: MatLike | str,
         model: str = "hog",
     ) -> str:
-
         # reconhecimento de imagens salva os captadas
         if type(img) is str:
             img = face_recognition.load_image_file(img)
 
         # redimensiona a imagem para melhorar a velocidade
-        small_img = cv2.resize(img, None, fx=0.5, fy=0.5)
-        input_face_locations = face_recognition.face_locations(small_img, model=model)
+        # small_img = cv2.resize(img, None, fx=0.5, fy=0.5)
+        input_face_locations = face_recognition.face_locations(img, model=model)
+        
+        time.sleep(3)
+        
         input_face_encodings = face_recognition.face_encodings(
-            small_img, input_face_locations
+            img, input_face_locations
         )
 
         for _, unknown_encoding in zip(input_face_locations, input_face_encodings):
