@@ -3,7 +3,7 @@
 
 import cv2
 import time
-from threading import Thread, Lock 
+from threading import Thread, Lock
 from src.video_config.video_config import VideoConfig
 import src.identifier.identifier as identifier
 import src.constants.movements as mov
@@ -35,8 +35,8 @@ def GameScreen():
     # video_conf = VideoConfig(screen_name, "./images/videomaos.mp4") #lê de um vídeo
     video_conf = VideoConfig(screen_name, 550, 300)
     video_conf.start()
-    
-    timer_sort_movement = time.perf_counter()
+
+    timer_next_mov = time.perf_counter()
     timer_show_movement = time.perf_counter()
     sort_movement = True
     show_movement = False
@@ -45,13 +45,16 @@ def GameScreen():
     my_identifier = identifier.Identifier()
     my_face_recognizer = FaceRecognizer(encodings_location=DEFAULT_ENCODINGS_PATH)
 
-    expected_player = "UNKNOWN" #TODO: Sortear um player
-    
+    expected_player = "UNKNOWN"  # TODO: Sortear um player
+
     searching_player = False
     player_found = False
-    
+
+    number_movements = 3
+    mov_showing_seq = 0
+
     with ThreadPoolExecutor(max_workers=4) as executor:
-    
+
         while True:
             if video_conf.stopped is True:
                 break
@@ -64,11 +67,13 @@ def GameScreen():
 
             # face_detection(img)
             # face_mesh(img)
-            
+
             if not searching_player and not player_found:
-                fut_player_search = executor.submit(my_face_recognizer.recognize_faces, img)
+                fut_player_search = executor.submit(
+                    my_face_recognizer.recognize_faces, img
+                )
                 searching_player = True
-                
+
             elif fut_player_search.done() and not player_found:
                 seached_player = fut_player_search.result()
                 print(seached_player)
@@ -80,42 +85,59 @@ def GameScreen():
 
             elif player_found:
                 my_identifier.process_image(img)
-                
-                delta = time.perf_counter() - timer_sort_movement
-                if delta > 10 or sort_movement:
-                    timer_sort_movement = time.perf_counter()
-                    sort_movement = True
-                
-                # realiza o sorteio do movimento
+                # draw_points(img, my_identifier.points)
+
                 if my_identifier.points:
-                    # realiza o sorteio do movimento
                     if sort_movement:
-                        my_identifier.sort_movement()
-                        show_movement = True
-                        
-                        delta = time.perf_counter() - timer_show_movement
-                        if delta > 5:
-                            timer_show_movement = time.perf_counter()
-                
-                    # Verifico se existe a necessidade de realizar um novo sorteio
-                    movement_identified = my_identifier.identify()
-
-                    if movement_identified:
-                        img = draw_message(img, mov.MOVEMENTS_MESSAGE[my_identifier.command])
-
-                #     draw_points(img, my_identifier.points)
-                # else:
-                #     initial_message(img)
-                    
-                if show_movement:
-                    delta = time.perf_counter() - timer_show_movement
-                    if delta < 5:
-                        img = show_image_movements(img, my_identifier.command)
-                        movement_identified = False
+                        my_identifier.sort_movements(number_movements)
                         sort_movement = False
-                    else:
-                        show_movement = False
-                
+                        show_movement = True
+                        timer_show_movement = time.perf_counter()
+
+                    elif show_movement:
+                        img = show_image_movements(
+                            img,
+                            my_identifier.command_at(mov_showing_seq),
+                            mov_showing_seq + 1,
+                        )
+
+                        delta = time.perf_counter() - timer_show_movement
+
+                        if delta > 4:
+                            if mov_showing_seq < my_identifier.qtd_movements() - 1:
+                                timer_show_movement = time.perf_counter()
+                                mov_showing_seq += 1
+                            else:
+                                show_movement = False
+
+                    elif not movement_identified:
+                        # Verifico se existe a necessidade de realizar um novo sorteio
+                        movement_identified = my_identifier.identify()
+                        if movement_identified:
+                            timer_next_mov = time.perf_counter()
+
+                    elif movement_identified:
+                        message_mov = f"{my_identifier.seq_command + 1} - {mov.MOVEMENTS_MESSAGE[my_identifier.command]}"
+                        img = draw_message(img, message_mov)
+
+                        delta = time.perf_counter() - timer_next_mov
+                        if delta > 2:
+                            if (
+                                my_identifier.seq_command
+                                < my_identifier.qtd_movements() - 1
+                            ):
+                                my_identifier.next_movement()
+                                movement_identified = False
+                                timer_next_mov = time.perf_counter()
+                            else:
+                                # identificou toda a lista de movimentos, volta as variaveis para o valor inicial
+                                mov_showing_seq = 0
+                                number_movements += 1
+
+                                movement_identified = False
+                                sort_movement = True
+
+                                show_movement = False
 
             cv2.imshow(screen_name, img)  # exibe a imagem com os pontos na tela
 

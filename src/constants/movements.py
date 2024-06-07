@@ -10,8 +10,8 @@ CROUCH = 4
 MOVEMENTS = (LEFT_HAND, RIGHT_HAND, JUMP, CROUCH)
 
 MOVEMENTS_ORDER = {
-    LEFT_HAND: "Levante a Mão Esquerda",
-    RIGHT_HAND: "Levante a Mão Direita",
+    LEFT_HAND: "Mão Esquerda",
+    RIGHT_HAND: "Mão Direita",
     JUMP: "Pule",
     CROUCH: "Agache",
 }

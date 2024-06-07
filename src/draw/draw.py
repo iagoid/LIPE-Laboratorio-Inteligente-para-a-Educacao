@@ -86,7 +86,7 @@ def draw_points(img: MatLike, points):
         cv2.circle(img, (cx, cy), 3, colors.RED, cv2.FILLED)  # desenha um círculo
 
 
-def show_image_movements(img: MatLike, command: int):
+def show_image_movements(img: MatLike, command: int, seq:int = None):
     image_filter = apply_filter(img)
     
     img_movement = cv2.imread(
@@ -103,7 +103,11 @@ def show_image_movements(img: MatLike, command: int):
 
     pil_image = Image.fromarray(image_filter)
 
-    order = mov.MOVEMENTS_ORDER[command]
+    if seq:
+        order = f"{seq} - {mov.MOVEMENTS_ORDER[command]}"
+    else:
+        order = mov.MOVEMENTS_ORDER[command]
+
     font = ImageFont.truetype(FONT_SUPER_SQUAD_PATH, size=25)
     draw = ImageDraw.Draw(pil_image)
 

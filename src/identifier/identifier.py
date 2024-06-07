@@ -3,7 +3,7 @@
 
 import src.constants.movements as mov
 import src.poses.poses as poses
-from random import *
+import random 
 from cv2.typing import MatLike
 
 # classe que identifica os movimentos do usuário
@@ -87,12 +87,16 @@ class Identifier(poses.Poses):
 
         return False
 
-    def sort_movement(self):
-        self.command = randint(1, len(mov.MOVEMENTS))
+    def sort_movements(self, qtd: int = 1):
         self.standing_shoulderRY = self.shoulderRY
         self.standing_shoulderLY = self.shoulderLY
         
-        print(mov.MOVEMENTS_ORDER[self.command])
+        self.list_commands = []
+        for i in range(qtd):
+            self.list_commands.append(random.randint(1, len(mov.MOVEMENTS)))
+            
+        self.seq_command = 0
+        self.command = self.list_commands[self.seq_command]
             
     def identify(self)->bool:
         match self.command:
@@ -107,3 +111,17 @@ class Identifier(poses.Poses):
 
             case mov.CROUCH:
                 return self.crouch_identifier()
+
+    def qtd_movements(self)->int:
+        return len(self.list_commands)
+
+    def seq_command(self)->int:
+        return self.seq_command
+    
+    def command_at(self, pos:int)->int:
+        return self.list_commands[pos]
+    
+    def next_movement(self):
+        self.seq_command += 1
+        self.command = self.list_commands[self.seq_command]
+        
