@@ -35,7 +35,7 @@ def GameScreen():
     # video_conf = VideoConfig(screen_name, "./images/videomaos.mp4") #lê de um vídeo
     video_conf = VideoConfig(screen_name, 550, 300)
     video_conf.start()
-
+    
     timer_sort_movement = time.perf_counter()
     timer_show_movement = time.perf_counter()
     sort_movement = True
@@ -101,16 +101,16 @@ def GameScreen():
                     movement_identified = my_identifier.identify()
 
                     if movement_identified:
-                        draw_message(img, mov.MOVEMENTS_MESSAGE[my_identifier.command])
+                        img = draw_message(img, mov.MOVEMENTS_MESSAGE[my_identifier.command])
 
-                    draw_points(img, my_identifier.points)
-                else:
-                    initial_message(img)
+                #     draw_points(img, my_identifier.points)
+                # else:
+                #     initial_message(img)
                     
                 if show_movement:
                     delta = time.perf_counter() - timer_show_movement
                     if delta < 5:
-                        show_image_movements(img, my_identifier.command)
+                        img = show_image_movements(img, my_identifier.command)
                         movement_identified = False
                         sort_movement = False
                     else:

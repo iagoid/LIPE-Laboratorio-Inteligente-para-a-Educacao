@@ -49,7 +49,6 @@ class PlayerScreen:
             )
             schSaveImg = schedule.every(1).seconds.do(self.SavePlayerImages)
 
-            # TODO: corrigir o evento, ele só para quando chega no proximo loop
             name = "NÃO IMPLEMENTADO"
             # while len(name) == 0 and not self.my_event.is_set():
             #     name = speaker.SpeakRecongnize("Qual seu nome?", self.my_event)
@@ -61,7 +60,7 @@ class PlayerScreen:
 
             age = 0
             order = "Qual sua idade?"
-            for _ in range(3):  # realiza 3 tentativas
+            for _ in range(2):  # realiza várias tentativas
                 if self.my_event.is_set():
                     schedule.cancel_job(schSaveImg)
                     return
@@ -85,7 +84,8 @@ class PlayerScreen:
                 schedule.cancel_job(schSaveImg)
                 return
             
-            speaker.SpeakText(age)
+            if age > 0:
+                speaker.SpeakText(age)
             with self.lock:
                 self.player = {}
                 self.player["id"] = self.player_id

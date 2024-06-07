@@ -11,7 +11,7 @@ import cvzone
 import src.constants.movements as mov
 from src.constants.fonts import PRIMARY_FONT, SECONDARY_FONT, FONT_SUPER_SQUAD_PATH
 
-
+# TODO: Revisar todas os textos mostrados em tela para utilizar o PIL
 def draw_rectangle(img: MatLike, text: str, text_size, position):
     cv2.rectangle(
         img,
@@ -54,7 +54,17 @@ def initial_message(img: MatLike):
 
 def draw_message(img: MatLike, message: str):
     cv2.rectangle(img, (1, 0), (260, 30), colors.ORANGE, -1)
-    cv2.putText(img, message, (15, 25), cv2.FONT_HERSHEY_SIMPLEX, 1.0, colors.WHITE, 2)
+    
+    pil_image = Image.fromarray(img)
+    
+    font = ImageFont.truetype(FONT_SUPER_SQUAD_PATH, size=15)
+    draw = ImageDraw.Draw(pil_image)
+    
+    draw.text(
+        (15, 5), message, font=font, stroke_width=1, stroke_fill=colors.BLACK
+    )
+    return np.asarray(pil_image)
+    
 
 
 def draw_points(img: MatLike, points):
@@ -77,23 +87,44 @@ def draw_points(img: MatLike, points):
 
 
 def show_image_movements(img: MatLike, command: int):
+    image_filter = apply_filter(img)
+    
     img_movement = cv2.imread(
         "images/" + mov.MOVEMENTS_IMAGES[command], cv2.IMREAD_UNCHANGED
     )
     img_movement = cv2.resize(img_movement, (0, 0), None, 0.5, 0.5)
 
-    h_background, w_ackground, _ = img.shape
+    h_background, w_ackground, _ = image_filter.shape
     h_img_mov, w_img_mov, _ = img_movement.shape
 
     pos_x = (w_ackground - w_img_mov) // 2
     pos_y = (h_background - h_img_mov) // 2
+    cvzone.overlayPNG(image_filter, img_movement, [pos_x, pos_y])
+
+    pil_image = Image.fromarray(image_filter)
 
     order = mov.MOVEMENTS_ORDER[command]
-    text_size = cv2.getTextSize(order, PRIMARY_FONT, 1, 1)[0]
-    textX = int((w_ackground - text_size[0]) / 2)
-    textY = int(pos_y + h_img_mov + 20)
-    cvzone.overlayPNG(img, img_movement, [pos_x, pos_y])
-    cv2.putText(img, order, (textX, textY), PRIMARY_FONT, 1, colors.WHITE, 1)
+    font = ImageFont.truetype(FONT_SUPER_SQUAD_PATH, size=25)
+    draw = ImageDraw.Draw(pil_image)
+
+    _, _, text_width, text_height = font.getbbox(text=order, stroke_width=1)
+
+    textX = int((w_ackground - text_width) / 2)
+    textY = int(pos_y + h_img_mov)
+    draw.text(
+        (textX, textY), order, font=font, stroke_width=1, stroke_fill=colors.BLACK
+    )
+    image = np.asarray(pil_image)
+
+    return image
+
+
+def apply_filter(img: MatLike) -> MatLike:
+    blue_layer = np.full(img.shape, colors.RED_LIGHT, dtype=np.uint8)
+    
+    blended_img = cv2.addWeighted(img, 0.5, blue_layer, 0.5, 0)
+    
+    return blended_img
 
 
 def draw_face_positioning(img: MatLike) -> MatLike:
@@ -122,11 +153,10 @@ def NextPlayer(img: MatLike) -> MatLike:
     font = ImageFont.truetype(FONT_SUPER_SQUAD_PATH, size=40)
     draw = ImageDraw.Draw(pil_image)
 
-    _, _, text_width, text_height = font.getbbox(text=text)
+    _, _, text_width, text_height = font.getbbox(text=text, stroke_width=1)
     textX = int((img_width - text_width) / 2)
     textY = int((img_height - text_height - 50))
-    draw.text((textX, textY), text, font=font)
+    draw.text((textX, textY), text, font=font, stroke_width=1, stroke_fill=colors.BLACK)
 
     image = np.asarray(pil_image)
-    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     return image

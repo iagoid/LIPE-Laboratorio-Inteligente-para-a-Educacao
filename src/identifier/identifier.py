@@ -16,13 +16,13 @@ class Identifier(poses.Poses):
 
     def process_image(self, img:MatLike):
         # manda o mediapipe processar a imagem
-        result_processing = self.pose.process(img)
+        copy_image = img.copy()
+        result_processing = self.pose.process(copy_image)
         # pego os pontos detectados na imagem
         self.points = result_processing.pose_landmarks
 
         if self.points:  # se foi identificado algum ponto...
-            self.mpDraw.draw_landmarks(img, self.points, self.mpPose.POSE_CONNECTIONS)
-            h, w, c = img.shape  # pego as dimensões da tela
+            self.mpDraw.draw_landmarks(copy_image, self.points, self.mpPose.POSE_CONNECTIONS)
 
             # capturo os dados das posições desejadas para este contexto
             self.handRX = self.points.landmark[self.mpPose.PoseLandmark.RIGHT_INDEX].x
