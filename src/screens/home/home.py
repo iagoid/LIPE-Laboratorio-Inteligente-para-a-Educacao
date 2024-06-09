@@ -13,14 +13,15 @@ class HomeScreen:
         pygame.display.set_caption("LIFE: Lab of Artificial Inteligence for Education")
         self.window_surface = pygame.display.set_mode((1920, 1080), pygame.FULLSCREEN)
 
-        # self.background = pygame.image.load("images/background.jpg")
-        # self.window_surface.blit(self.background, (0, 0))
+        self.background = pygame.image.load("images/background.jpg")
+        self.window_surface.blit(self.background, (0, 0))
         self.manager = pygame_gui.UIManager(
             (self.window_surface.get_width(), self.window_surface.get_height()),
             "src/styles/style.json",
         )
 
         self.player_screen = players.PlayerScreen()
+        self.game = game.Game()
 
     def Show(self):
 
@@ -63,7 +64,7 @@ class HomeScreen:
 
                     elif event.ui_element == btn_play:
                         pygame.display.set_mode(flags=pygame.HIDDEN)
-                        game.GameScreen(*pygame.display.get_window_size())
+                        self.game.Show(*pygame.display.get_window_size())
                         pygame.display.set_mode(flags=pygame.SHOWN)
 
                     elif event.ui_element == btn_players:

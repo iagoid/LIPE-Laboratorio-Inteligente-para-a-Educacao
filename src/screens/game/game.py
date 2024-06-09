@@ -30,121 +30,138 @@ screen_name = "Identificador de Movimentos"
 
 
 # laço de repetição que fica rodando durante toda aplicação
-def GameScreen(width: int, height: int):
-    # abre o fluxo de leitura
-    # video_conf = VideoConfig(screen_name, "./images/videomaos.mp4") #lê de um vídeo
-    video_conf = VideoConfig(screen_name, width=width, height=height)
-    video_conf.start()
+class Game:
+    def __init__(self):
+        self.sort_movement = True
+        self.is_showing_movements = False
+        self.is_movement_identified = False
+        self.searching_player = False
+        self.player_found = False
+        
+        self.number_movements = 3
+        self.mov_showing_seq = 0
+        
+    def find_expected_player(self):
 
-    timer_next_mov = time.perf_counter()
-    timer_show_movement = time.perf_counter()
-    sort_movement = True
-    show_movement = False
-    movement_identified = False
+        if not self.searching_player:
+            self.fut_player_search = self.executor.submit(
+                self.my_face_recognizer.recognize_faces, self.img
+            )
+            self.searching_player = True
 
-    my_identifier = identifier.Identifier()
-    my_face_recognizer = FaceRecognizer(encodings_location=DEFAULT_ENCODINGS_PATH)
+        elif self.fut_player_search.done():
+            seached_player = self.fut_player_search.result()
+            print(seached_player)
+            self.searching_player = False
+            if seached_player == self.expected_player:
+                print("Iniciando o Jogo")
+                self.player_found = True
+                self.executor.shutdown()
+                
+    def sort_sequence_movements(self):
+        self.my_identifier.sort_movements(self.number_movements)
+        self.sort_movement = False
+        self.is_showing_movements = True
+        self.timer_is_showing_movements = time.perf_counter()
 
-    expected_player = "UNKNOWN"  # TODO: Sortear um player
+    def show_movement(self):
+        self.img = show_image_movements(
+            self.img,
+            self.my_identifier.command_at(self.mov_showing_seq),
+            self.mov_showing_seq + 1,
+        )
 
-    searching_player = False
-    player_found = False
+        delta = time.perf_counter() - self.timer_is_showing_movements
 
-    number_movements = 3
-    mov_showing_seq = 0
-
-    with ThreadPoolExecutor(max_workers=4) as executor:
-
-        while True:
-            if video_conf.stopped is True:
-                break
+        if delta > 4:
+            if self.mov_showing_seq < self.my_identifier.qtd_movements() - 1:
+                self.timer_is_showing_movements = time.perf_counter()
+                self.mov_showing_seq += 1
             else:
-                img = video_conf.read()
+                self.is_showing_movements = False
+                
+    def show_identified_movement(self):
+        message_mov = f"{self.my_identifier.seq_command + 1} - {mov.MOVEMENTS_MESSAGE[self.my_identifier.command]}"
+        self.img = draw_message(self.img, message_mov)
 
-            imgRGB = cv2.cvtColor(
-                img, cv2.COLOR_BGR2RGB
-            )  # converte a cor para RGB (posso também utilizar essa imagem no processamento)
+        delta = time.perf_counter() - self.timer_next_mov
+        if delta > 2:
+            if (
+                self.my_identifier.seq_command
+                < self.my_identifier.qtd_movements() - 1
+            ):
+                self.my_identifier.next_movement()
+                self.is_movement_identified = False
+                self.timer_next_mov = time.perf_counter()
+            else:
+                # identificou toda a lista de movimentos, volta as variaveis para o valor inicial
+                self.mov_showing_seq = 0
+                self.number_movements += 1
 
-            # face_detection(img)
-            # face_mesh(img)
+                self.is_movement_identified = False
+                self.sort_movement = True
 
-            if not searching_player and not player_found:
-                fut_player_search = executor.submit(
-                    my_face_recognizer.recognize_faces, img
-                )
-                searching_player = True
+                self.is_showing_movements = False
+    
+    def Show(self, width: int, height: int):
+        # abre o fluxo de leitura
+        # video_conf = VideoConfig(screen_name, "./images/videomaos.mp4") #lê de um vídeo
+        video_conf = VideoConfig(screen_name, width=width, height=height)
+        video_conf.start()
 
-            elif fut_player_search.done() and not player_found:
-                seached_player = fut_player_search.result()
-                print(seached_player)
-                searching_player = False
-                if seached_player == expected_player:
-                    print("Iniciando o Jogo")
-                    player_found = True
-                    executor.shutdown()
+        self.timer_next_mov = time.perf_counter()
+        self.timer_is_showing_movements = time.perf_counter()
 
-            elif player_found:
-                my_identifier.process_image(img)
-                # draw_points(img, my_identifier.points)
+        self.my_identifier = identifier.Identifier()
+        self.my_face_recognizer = FaceRecognizer(
+            encodings_location=DEFAULT_ENCODINGS_PATH
+        )
 
-                if my_identifier.points:
-                    if sort_movement:
-                        my_identifier.sort_movements(number_movements)
-                        sort_movement = False
-                        show_movement = True
-                        timer_show_movement = time.perf_counter()
+        self.expected_player = "UNKNOWN"  # TODO: Sortear um player
 
-                    elif show_movement:
-                        img = show_image_movements(
-                            img,
-                            my_identifier.command_at(mov_showing_seq),
-                            mov_showing_seq + 1,
-                        )
+        with ThreadPoolExecutor(max_workers=4) as self.executor:
+        
+            while True:
+                if video_conf.stopped is True:
+                    break
+                else:
+                    self.img = video_conf.read()
 
-                        delta = time.perf_counter() - timer_show_movement
+                # imgRGB = cv2.cvtColor(
+                #     self.img, cv2.COLOR_BGR2RGB
+                # )  # converte a cor para RGB (posso também utilizar essa imagem no processamento)
 
-                        if delta > 4:
-                            if mov_showing_seq < my_identifier.qtd_movements() - 1:
-                                timer_show_movement = time.perf_counter()
-                                mov_showing_seq += 1
-                            else:
-                                show_movement = False
+                # face_detection(img)
+                # face_mesh(img)
+                if not self.player_found:
+                    self.find_expected_player()
 
-                    elif not movement_identified:
-                        # Verifico se existe a necessidade de realizar um novo sorteio
-                        movement_identified = my_identifier.identify()
-                        if movement_identified:
-                            timer_next_mov = time.perf_counter()
+                else:
+                    self.my_identifier.process_image(self.img)
+                    # draw_points(self.img, self.my_identifier.points)
 
-                    elif movement_identified:
-                        message_mov = f"{my_identifier.seq_command + 1} - {mov.MOVEMENTS_MESSAGE[my_identifier.command]}"
-                        img = draw_message(img, message_mov)
+                    if self.my_identifier.points:
+                        if self.sort_movement:
+                            self.sort_sequence_movements()
 
-                        delta = time.perf_counter() - timer_next_mov
-                        if delta > 2:
-                            if (
-                                my_identifier.seq_command
-                                < my_identifier.qtd_movements() - 1
-                            ):
-                                my_identifier.next_movement()
-                                movement_identified = False
-                                timer_next_mov = time.perf_counter()
-                            else:
-                                # identificou toda a lista de movimentos, volta as variaveis para o valor inicial
-                                mov_showing_seq = 0
-                                number_movements += 1
+                        elif self.is_showing_movements:
+                            self.show_movement()
 
-                                movement_identified = False
-                                sort_movement = True
+                        elif not self.is_movement_identified:
+                            # Verifico se existe a necessidade de realizar um novo sorteio
+                            self.is_movement_identified = self.my_identifier.identify()
+                            if self.is_movement_identified:
+                                self.timer_next_mov = time.perf_counter()
 
-                                show_movement = False
+                        elif self.is_movement_identified:
+                            self.show_identified_movement()
 
-            cv2.imshow(screen_name, img)  # exibe a imagem com os pontos na tela
+                cv2.imshow(screen_name, self.img)  # exibe a imagem com os pontos na tela
 
-            # verifica que teclas foram apertadas
-            tecla = cv2.waitKey(33)  # espera em milisegundos da execução das imagens
-            if tecla == 27:  # verifica se foi a tecla esc
-                break
+                # verifica que teclas foram apertadas
+                tecla = cv2.waitKey(33)  # espera em milisegundos da execução das imagens
+                if tecla == 27:  # verifica se foi a tecla esc
+                    break
 
-    video_conf.stop()
-    cv2.destroyAllWindows()
+        video_conf.stop()
+        cv2.destroyAllWindows()
