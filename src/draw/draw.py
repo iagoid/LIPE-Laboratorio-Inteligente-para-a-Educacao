@@ -10,6 +10,8 @@ from cv2.typing import MatLike
 import cvzone
 import src.constants.movements as mov
 from src.constants.fonts import PRIMARY_FONT, SECONDARY_FONT, FONT_SUPER_SQUAD_PATH
+import os
+
 
 # TODO: Revisar todas os textos mostrados em tela para utilizar o PIL
 def draw_rectangle(img: MatLike, text: str, text_size, position):
@@ -54,17 +56,14 @@ def initial_message(img: MatLike):
 
 def draw_message(img: MatLike, message: str):
     cv2.rectangle(img, (1, 0), (260, 30), colors.ORANGE, -1)
-    
+
     pil_image = Image.fromarray(img)
-    
+
     font = ImageFont.truetype(FONT_SUPER_SQUAD_PATH, size=15)
     draw = ImageDraw.Draw(pil_image)
-    
-    draw.text(
-        (15, 5), message, font=font, stroke_width=1, stroke_fill=colors.BLACK
-    )
+
+    draw.text((15, 5), message, font=font, stroke_width=1, stroke_fill=colors.BLACK)
     return np.asarray(pil_image)
-    
 
 
 def draw_points(img: MatLike, points):
@@ -86,18 +85,18 @@ def draw_points(img: MatLike, points):
         cv2.circle(img, (cx, cy), 3, colors.RED, cv2.FILLED)  # desenha um círculo
 
 
-def show_image_movements(img: MatLike, command: int, seq:int = None):
+def show_image_movements(img: MatLike, command: int, seq: int = None):
     image_filter = apply_filter(img)
-    
+
     img_movement = cv2.imread(
         "images/" + mov.MOVEMENTS_IMAGES[command], cv2.IMREAD_UNCHANGED
     )
     img_movement = cv2.resize(img_movement, (0, 0), None, 0.5, 0.5)
 
-    h_background, w_ackground, _ = image_filter.shape
+    h_background, w_background, _ = image_filter.shape
     h_img_mov, w_img_mov, _ = img_movement.shape
 
-    pos_x = (w_ackground - w_img_mov) // 2
+    pos_x = (w_background - w_img_mov) // 2
     pos_y = (h_background - h_img_mov) // 2
     cvzone.overlayPNG(image_filter, img_movement, [pos_x, pos_y])
 
@@ -113,7 +112,7 @@ def show_image_movements(img: MatLike, command: int, seq:int = None):
 
     _, _, text_width, text_height = font.getbbox(text=order, stroke_width=1)
 
-    textX = int((w_ackground - text_width) / 2)
+    textX = int((w_background - text_width) / 2)
     textY = int(pos_y + h_img_mov)
     draw.text(
         (textX, textY), order, font=font, stroke_width=1, stroke_fill=colors.BLACK
@@ -123,11 +122,50 @@ def show_image_movements(img: MatLike, command: int, seq:int = None):
     return image
 
 
+def show_player_image(img: MatLike, seq_player: int = None) -> MatLike | None:
+    dir_img_profile = f"PlayerImages{os.sep}{seq_player}{os.sep}profile.jpg"
+    img_profile = cv2.imread(dir_img_profile, cv2.IMREAD_UNCHANGED)
+
+    if img_profile is None:
+        return None
+
+    img_profile = cv2.resize(img_profile, (0, 0), fx=0.6, fy=0.6)
+
+    h_background, w_background, _ = img.shape
+    h_img_prof, w_img_prof, _ = img_profile.shape
+
+    pos_y = (h_background - h_img_prof) // 2
+
+    x_offset = (w_background - w_img_prof) // 2
+    y_offset = (h_background - h_img_prof) // 2
+
+    img[
+        y_offset : y_offset + h_img_prof,
+        x_offset : x_offset + w_img_prof,
+    ] = img_profile
+
+    pil_image = Image.fromarray(img)
+
+    order = "Próximo Jogador"
+
+    font = ImageFont.truetype(FONT_SUPER_SQUAD_PATH, size=35)
+    draw = ImageDraw.Draw(pil_image)
+
+    _, _, text_width, text_height = font.getbbox(text=order, stroke_width=1)
+
+    textX = int((w_background - text_width) / 2)
+    textY = int(pos_y + h_img_prof)
+    draw.text((textX, textY), order, font=font, stroke_width=1, stroke_fill=colors.ORANGE)
+    image = np.asarray(pil_image)
+
+    return image
+
+
 def apply_filter(img: MatLike) -> MatLike:
     blue_layer = np.full(img.shape, colors.RED_LIGHT, dtype=np.uint8)
-    
+
     blended_img = cv2.addWeighted(img, 0.5, blue_layer, 0.5, 0)
-    
+
     return blended_img
 
 
