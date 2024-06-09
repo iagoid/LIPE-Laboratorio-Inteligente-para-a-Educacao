@@ -30,10 +30,10 @@ screen_name = "Identificador de Movimentos"
 
 
 # laço de repetição que fica rodando durante toda aplicação
-def GameScreen():
+def GameScreen(width: int, height: int):
     # abre o fluxo de leitura
     # video_conf = VideoConfig(screen_name, "./images/videomaos.mp4") #lê de um vídeo
-    video_conf = VideoConfig(screen_name, 550, 300)
+    video_conf = VideoConfig(screen_name, width=width, height=height)
     video_conf.start()
 
     timer_next_mov = time.perf_counter()

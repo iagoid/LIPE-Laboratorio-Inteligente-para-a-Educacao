@@ -12,6 +12,11 @@ class VideoConfig:
     def __init__(
         self, screen_name: str, width: int, height: int, video_source: int = 0
     ):
+        cv2.namedWindow(screen_name, cv2.WND_PROP_FULLSCREEN)
+        cv2.setWindowProperty(
+            screen_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN
+        )
+        
         # abre o fluxo de leitura
         self.video = cv2.VideoCapture(video_source, cv2.CAP_DSHOW)
         if self.video.isOpened() is False:
