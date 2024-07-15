@@ -86,7 +86,7 @@ def draw_points(img: MatLike, points):
 
 
 def show_image_movements(img: MatLike, command: int, seq: int = None):
-    image_filter = apply_filter(img)
+    image_filter = apply_filter(img, colors.RED_LIGHT)
 
     img_movement = cv2.imread(
         "images/" + mov.MOVEMENTS_IMAGES[command], cv2.IMREAD_UNCHANGED
@@ -126,9 +126,6 @@ def show_player_image(img: MatLike, seq_player: int = None) -> MatLike | None:
     dir_img_profile = f"PlayerImages{os.sep}{seq_player}{os.sep}profile.jpg"
     img_profile = cv2.imread(dir_img_profile, cv2.IMREAD_UNCHANGED)
 
-    if img_profile is None:
-        return None
-
     img_profile = cv2.resize(img_profile, (0, 0), fx=0.6, fy=0.6)
 
     h_background, w_background, _ = img.shape
@@ -161,8 +158,8 @@ def show_player_image(img: MatLike, seq_player: int = None) -> MatLike | None:
     return image
 
 
-def apply_filter(img: MatLike) -> MatLike:
-    blue_layer = np.full(img.shape, colors.RED_LIGHT, dtype=np.uint8)
+def apply_filter(img: MatLike, color:tuple[3]) -> MatLike:
+    blue_layer = np.full(img.shape, color, dtype=np.uint8)
 
     blended_img = cv2.addWeighted(img, 0.5, blue_layer, 0.5, 0)
 

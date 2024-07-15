@@ -2,15 +2,21 @@ import argparse
 import pickle
 from pathlib import Path
 import cv2
-from face_recognizer import FaceRecognizer
+from src.face_recognition.face_recognizer import FaceRecognizer
+from src.globals.variables import Loading_Counter
+import os
+from threading import Lock
 
 import face_recognition
+import sys
 
-DEFAULT_ENCODINGS_PATH = Path("../../output/encodings.pkl")
+sys.path.append(".")
 
-PATH_TRAINING = "../../images/faces/training"
-PATH_OUTPUT = "../../output"
-PATH_VALIDATION = "../../images/faces/validation"
+DEFAULT_ENCODINGS_PATH = Path("output" + os.sep + "encodings.pkl")
+
+PATH_TRAINING = "PlayerImages"
+PATH_OUTPUT = "output"
+PATH_VALIDATION = "images" + os.sep + "faces" + os.sep + "validation"
 
 
 # Create directories if they don't already exist
@@ -20,9 +26,7 @@ Path(PATH_VALIDATION).mkdir(exist_ok=True)
 
 parser = argparse.ArgumentParser(description="Recognize faces in an image")
 parser.add_argument("--train", action="store_true", help="Train on input data")
-parser.add_argument(
-    "--validate", action="store_true", help="Validate trained model"
-)
+parser.add_argument("--validate", action="store_true", help="Validate trained model")
 parser.add_argument(
     "--test", action="store_true", help="Test the model with an unknown image"
 )
@@ -33,19 +37,19 @@ parser.add_argument(
     choices=["hog", "cnn"],
     help="Which model to use for training: hog (CPU), cnn (GPU)",
 )
-parser.add_argument(
-    "-f", action="store", help="Path to an image with an unknown face"
-)
+parser.add_argument("-f", action="store", help="Path to an image with an unknown face")
 args = parser.parse_args()
 
 
-def encode_known_faces(
-    model: str = "hog", encodings_location: Path = DEFAULT_ENCODINGS_PATH
+def encode_known_faces(shared_loading_counter = 0, lock =  None,
+    model: str = "hog", encodings_location: Path = DEFAULT_ENCODINGS_PATH, 
 ) -> None:
-    """
-    Loads images in the training directory and builds a dictionary of their
-    names and encodings.
-    """
+    
+    lock = Lock()
+
+    players_count = 1
+    total_players = len(list(Path(PATH_TRAINING).glob("*/*")))
+
     names = []
     encodings = []
 
@@ -60,6 +64,10 @@ def encode_known_faces(
             names.append(name)
             encodings.append(encoding)
 
+        if not lock is None:
+            with lock:
+                shared_loading_counter.value = round(players_count / total_players * 100, 1)
+        players_count += 1
     name_encodings = {"names": names, "encodings": encodings}
     with encodings_location.open(mode="wb") as f:
         pickle.dump(name_encodings, f)
@@ -84,8 +92,8 @@ if __name__ == "__main__":
     if args.validate:
         validate(model=args.m)
     if args.test:
-        video = cv2.VideoCapture(0) #lê da webcam
-        check, img = video.read() #lê o vídeo
+        video = cv2.VideoCapture(0)  # lê da webcam
+        check, img = video.read()  # lê o vídeo
         my_face_recognizer = FaceRecognizer(encodings_location=DEFAULT_ENCODINGS_PATH)
         my_face_recognizer.recognize_faces(img=img, model=args.m)
         video.release()

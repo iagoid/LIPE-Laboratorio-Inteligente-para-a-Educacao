@@ -2,13 +2,13 @@
 # coding: utf-8
 
 import sys
-sys.path.append("../constants")
+sys.path.append("/src")
+
 import pickle
 from collections import Counter
 from pathlib import Path
 from cv2.typing import MatLike
-import cv2
-import src.constants.constants as constants
+from src.constants.constants import NAME_UNKNOWN_PLAYER
 
 import face_recognition
 import time
@@ -44,7 +44,7 @@ class FaceRecognizer:
         for _, unknown_encoding in zip(input_face_locations, input_face_encodings):
             name = self._recognize_face(unknown_encoding)
             if not name:
-                name = constants.NAME_UNKNOWN_PLAYER
+                name = NAME_UNKNOWN_PLAYER
             return name
 
     def _recognize_face(self, unknown_encoding):

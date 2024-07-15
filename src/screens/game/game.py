@@ -6,6 +6,7 @@ import time
 from src.video_config.video_config import VideoConfig
 import src.identifier.identifier as identifier
 import src.constants.movements as mov
+import src.constants.colors as colors
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 
@@ -20,6 +21,7 @@ from src.draw.draw import (
     draw_points,
     show_image_movements,
     show_player_image,
+    apply_filter,
 )
 from random import *
 from database.students.students import select_students
@@ -34,6 +36,7 @@ class Game:
     def __init__(self):
         self.sort_movement = True
         self.is_showing_movements = False
+        self.is_movement_wrong = False
         self.is_movement_identified = False
         self.searching_player = False
         self.player_found = False
@@ -51,16 +54,18 @@ class Game:
             self.searching_player = True
 
         elif self.fut_player_search.done():
-            seached_player = self.fut_player_search.result()
-
-            self.searching_player = False
-            if seached_player == self.expected_player:
-                print("Iniciando o Jogo")
-                self.player_found = True
-                self.executor.shutdown()
+            searched_player = self.fut_player_search.result()
+            
+            if not searched_player is None: 
+                print(f"Player Consultado {searched_player}")
+                self.searching_player = False
+                if int(searched_player) == self.expected_player:
+                    print("Iniciando o Jogo")
+                    self.player_found = True
+                    self.executor.shutdown()
 
     def sort_sequence_movements(self):
-        self.my_identifier.sort_movements(self.number_movements)
+        self.my_identifier.sort_movements(self.img.shape[0], self.number_movements)
         self.sort_movement = False
         self.is_showing_movements = True
         self.timer_is_showing_movements = time.perf_counter()
@@ -90,33 +95,39 @@ class Game:
             if self.my_identifier.seq_command < self.my_identifier.qtd_movements() - 1:
                 self.my_identifier.next_movement()
                 self.is_movement_identified = False
+                self.is_movement_wrong = False
                 self.timer_next_mov = time.perf_counter()
             else:
-                # identificou toda a lista de movimentos, volta as variaveis para o valor inicial
-                self.mov_showing_seq = 0
-                self.number_movements += 1
+                self.call_next_player()
 
-                self.is_movement_identified = False
-                self.sort_movement = True
+    def call_next_player(self, add_mov: bool = True):
+        self.mov_showing_seq = 0
 
-                self.is_showing_movements = False
+        if add_mov:
+            self.number_movements += 1
 
-                if len(self.list_players) == 0:
-                    print("Não foram identificados jogadores.")
-                    self.expected_player = None
-                else:
-                    self.player_seq += 1
-                    if self.player_seq <= len(self.list_players):
-                        self.expected_player = self.list_players[self.player_seq][0]
+        self.is_movement_wrong = False
+        self.is_movement_identified = False
+        self.sort_movement = True
+
+        self.is_showing_movements = False
+
+        if len(self.list_players) == 0:
+            print("Não foram identificados jogadores.")
+            self.expected_player = None
+        else:
+            self.player_seq += 1
+            if self.player_seq < len(self.list_players):
+                self.expected_player = self.list_players[self.player_seq][0]
 
     def show_next_player(self):
         img_player = show_player_image(self.img, self.expected_player)
-        
+
         if img_player is None:
             return
-        
+
         self.img = img_player
-        
+
         delta = time.perf_counter() - self.timer_is_showing_movements
         if delta > 4:
             self.is_showing_next_player = False
@@ -139,7 +150,8 @@ class Game:
         self.list_players = select_students()
 
         self.is_showing_next_player = True
-        self.expected_player = self.list_players[self.player_seq][0]
+        self.expected_player = int(self.list_players[self.player_seq][0])
+        print("---> " + str(self.expected_player))
 
         with ThreadPoolExecutor(max_workers=4) as self.executor:
 
@@ -174,12 +186,26 @@ class Game:
 
                             elif not self.is_movement_identified:
                                 # Verifico se existe a necessidade de realizar um novo sorteio
-                                self.is_movement_identified = (
-                                    self.my_identifier.identify()
+                                movement_correct = (
+                                    self.my_identifier.identify_list_movements()
                                 )
-                                if self.is_movement_identified:
-                                    self.timer_next_mov = time.perf_counter()
 
+                                if movement_correct:
+                                    self.is_movement_wrong = False
+                                    self.is_movement_identified = True
+                                    self.timer_next_mov = time.perf_counter()
+                                elif movement_correct == False:
+                                    self.timer_is_movement_wrong = time.perf_counter()
+                                    self.is_movement_wrong = True
+
+                            elif self.is_movement_wrong:
+                                delta = (
+                                    time.perf_counter() - self.timer_is_movement_wrong
+                                )
+                                if delta < 4:
+                                    self.img = self.apply_filter(self.img, colors.BLUE)
+                                else:
+                                    self.call_next_player(False)
                             elif self.is_movement_identified:
                                 self.show_identified_movement()
 

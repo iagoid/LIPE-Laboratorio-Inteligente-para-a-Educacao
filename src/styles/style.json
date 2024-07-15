@@ -29,6 +29,30 @@
             "italic": "0",
             "regular_path": "src/screens/fonts/Super Squad.ttf"
         }
-        
+    },
+    "progress_bar": {
+        "colours": {
+            "normal_text": "#c5cbd8",
+            "text_shadow": "#777777",
+            "normal_border": "#DDDDDD",
+            "filled_bar": "#25292e,#35393e,180",
+            "unfilled_bar": "#CCCCCC"
+        },
+        "font": {
+            "name": "super_squad",
+            "size": "30",
+            "bold": "1",
+            "italic": "0",
+            "regular_path": "src/screens/fonts/Super Squad.ttf"
+        }
+    },
+    "label": {
+        "font": {
+            "name": "super_squad",
+            "size": "18",
+            "bold": "",
+            "italic": "0",
+            "regular_path": "src/screens/fonts/Super Squad.ttf"
+        }
     }
 }
