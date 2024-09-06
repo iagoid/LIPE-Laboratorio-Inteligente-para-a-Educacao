@@ -61,10 +61,10 @@ class Identifier(poses.Poses):
         distMaos = abs(self.handRY - self.handLY)
 
         # se a distância das mãos e dos pés bater nas medidas, ele incrementa as contagens
-        if distMaos > 0.5 and not (
-            self.noseY <= self.handRY and self.noseY <= self.handLY
-        ):
-            if self.noseY <= self.handLY:
+        if distMaos > 0.5:
+            if self.noseY >= self.handRY:
+                return False
+            if self.noseY >= self.handLY:
                 return True
 
         return False
@@ -74,10 +74,10 @@ class Identifier(poses.Poses):
         distMaos = abs(self.handRY - self.handLY)
 
         # se a distância das mãos e dos pés bater nas medidas, ele incrementa as contagens
-        if distMaos > 0.5 and not (
-            self.noseY <= self.handRY and self.noseY <= self.handLY
-        ):
-            if self.noseY <= self.handRY:
+        if distMaos > 0.5:
+            if self.noseY >= self.handLY:
+                return False
+            if self.noseY >= self.handRY:
                 return True
 
         return False
@@ -85,10 +85,9 @@ class Identifier(poses.Poses):
     def jump_identifier(self) -> bool:
         actual_mid_y = (self.shoulderRY + self.shoulderLY) / 2
 
-        # aceita apenas variações de 15% para mais ou menos
-        lower_bound = self.standing_mid_y - (self.standing_mid_y * 0.15)
+        # aceita variações de menos de 30%
+        lower_bound = self.standing_mid_y - (self.standing_mid_y * 0.30)
 
-        print(actual_mid_y, lower_bound)
         if actual_mid_y < lower_bound:
             return True
 
@@ -97,17 +96,15 @@ class Identifier(poses.Poses):
     def crouch_identifier(self) -> bool:
         actual_mid_y = (self.shoulderRY + self.shoulderLY) / 2
 
-        # aceita apenas variações de 15% para mais ou menos
-        upper_bound = self.standing_mid_y + (self.standing_mid_y * 0.15)
+        # aceita variações de mais de 30%
+        upper_bound = self.standing_mid_y + (self.standing_mid_y * 0.3)
 
-        print(actual_mid_y, upper_bound)
         if actual_mid_y > upper_bound:
             return True
 
         return False
 
     def sort_movements(self, height: float, qtd: int = 1):
-        print(f"Altura {height}")
         if self.shoulderRY == 0 or self.shoulderLY == 0:
             self.standing_mid_y = 0.8
         else:
@@ -148,7 +145,7 @@ class Identifier(poses.Poses):
         for i, fn in enumerate(self.MOVEMENTS_METHODS):
             if fn():
                 print(
-                    f"Movimento Esperado: {mov.MOVEMENTS_ORDER[self.command]}. Retornado {mov.MOVEMENTS_ORDER[i]}"
+                    f"Movimento Esperado: {mov.MOVEMENTS_ORDER[self.command]}. Retornado {mov.MOVEMENTS_ORDER[i+1]}"
                 )
                 return False
 

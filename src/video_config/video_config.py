@@ -63,6 +63,10 @@ class VideoConfig:
 
     def read(self):
         return cv2.flip(self.frame, 1)
+    
+    #imagem real sem a inversão
+    def real_image(self):
+        return self.frame
 
     def stop(self):
         self.stopped = True

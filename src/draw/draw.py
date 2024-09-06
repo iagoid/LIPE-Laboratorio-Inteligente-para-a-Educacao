@@ -86,7 +86,7 @@ def draw_points(img: MatLike, points):
 
 
 def show_image_movements(img: MatLike, command: int, seq: int = None):
-    image_filter = apply_filter(img, colors.RED_LIGHT)
+    image_filter = apply_filter(img, colors.BLUE_LIGHT)
 
     img_movement = cv2.imread(
         "images/" + mov.MOVEMENTS_IMAGES[command], cv2.IMREAD_UNCHANGED

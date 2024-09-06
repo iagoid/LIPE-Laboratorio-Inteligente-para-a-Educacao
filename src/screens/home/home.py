@@ -5,7 +5,9 @@ import pygame
 import pygame_gui
 from src.screens.players import players
 from src.screens.loading import loading
+from src.screens.game import game
 from src.face_recognition.model_recognition import encode_known_faces
+from src.constants.constants import DEVELOP_MODE
 
 class HomeScreen:
     def __init__(self):
@@ -21,7 +23,10 @@ class HomeScreen:
         )
 
         self.player_screen = players.PlayerScreen()
-        self.loading = loading.Loading(self.window_surface, self.background)
+        if DEVELOP_MODE:
+            self.game = game.Game()
+        else:
+            self.loading = loading.Loading(self.window_surface, self.background)
 
     def Show(self):
 
@@ -63,7 +68,10 @@ class HomeScreen:
                         is_running = False
 
                     elif event.ui_element == btn_play:
-                        self.loading.Show()
+                        if DEVELOP_MODE:
+                            self.game.Show(*pygame.display.get_window_size())
+                        else:
+                            self.loading.Show()
 
                     elif event.ui_element == btn_players:
                         pygame.display.set_mode(flags=pygame.HIDDEN)

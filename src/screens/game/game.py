@@ -25,6 +25,7 @@ from src.draw.draw import (
 )
 from random import *
 from database.students.students import select_students
+from database.scores.scores import add_score
 
 DEFAULT_ENCODINGS_PATH = Path("output/encodings.pkl")
 
@@ -49,7 +50,7 @@ class Game:
 
         if not self.searching_player:
             self.fut_player_search = self.executor.submit(
-                self.my_face_recognizer.recognize_faces, self.img
+                self.my_face_recognizer.recognize_faces, self.real_image
             )
             self.searching_player = True
 
@@ -160,6 +161,7 @@ class Game:
                     break
                 else:
                     self.img = video_conf.read()
+                    self.real_image = video_conf.real_image()
 
                     # imgRGB = cv2.cvtColor(
                     #     self.img, cv2.COLOR_BGR2RGB
@@ -174,7 +176,7 @@ class Game:
                         self.find_expected_player()
 
                     else:
-                        self.my_identifier.process_image(self.img)
+                        self.my_identifier.process_image(self.real_image)
                         # draw_points(self.img, self.my_identifier.points)
 
                         if self.my_identifier.points:
@@ -184,13 +186,15 @@ class Game:
                             elif self.is_showing_movements:
                                 self.show_movement()
 
-                            elif not self.is_movement_identified:
+                            elif not self.is_movement_identified and not self.is_movement_wrong:
                                 # Verifico se existe a necessidade de realizar um novo sorteio
                                 movement_correct = (
                                     self.my_identifier.identify_list_movements()
                                 )
 
-                                if movement_correct:
+                                if None:
+                                    pass
+                                elif movement_correct:
                                     self.is_movement_wrong = False
                                     self.is_movement_identified = True
                                     self.timer_next_mov = time.perf_counter()
@@ -199,11 +203,12 @@ class Game:
                                     self.is_movement_wrong = True
 
                             elif self.is_movement_wrong:
+                                add_score((self.number_movements, self.expected_player))
                                 delta = (
                                     time.perf_counter() - self.timer_is_movement_wrong
                                 )
                                 if delta < 4:
-                                    self.img = self.apply_filter(self.img, colors.BLUE)
+                                    self.img = apply_filter(self.img, colors.RED)
                                 else:
                                     self.call_next_player(False)
                             elif self.is_movement_identified:

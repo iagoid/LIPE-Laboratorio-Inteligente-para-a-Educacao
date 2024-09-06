@@ -1,5 +1,6 @@
 import os
 
+DEVELOP_MODE = True
 
 HARCASCADEPATH = "models" + os.sep + "haarcascade_frontalface_default.xml"
 DIRECTORY_IMAGE_PLAYER = "PlayerImages"

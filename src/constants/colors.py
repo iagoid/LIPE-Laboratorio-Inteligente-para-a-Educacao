@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# Constantes que definem os movimentos
-RED = (255, 0, 0)
-RED_LIGHT = (232, 50, 0)
-BLUE = (100, 100, 0)
+# o CV2 usa o padrão BGR
+RED = (0, 0, 255)
+BLUE_LIGHT = (232, 50, 0)
+BLUE = (255, 0, 0)
 WHITE = (255, 255, 255)
 ORANGE = (0, 64, 255)
 BLACK = (0, 0, 0)

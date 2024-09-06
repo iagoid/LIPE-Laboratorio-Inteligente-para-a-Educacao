@@ -84,7 +84,7 @@ class Loading:
             pygame.display.update()
         
         with lock:
-            if shared_Loading_Counter.value == 100:
+            if shared_Loading_Counter.value >= 100:
                 pygame.display.set_mode(flags=pygame.HIDDEN)
                 self.game.Show(*pygame.display.get_window_size())
                 pygame.display.set_mode(flags=pygame.SHOWN)

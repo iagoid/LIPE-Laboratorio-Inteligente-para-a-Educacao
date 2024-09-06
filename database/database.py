@@ -18,8 +18,15 @@ def create_sqlite_database():
 def create_tables():
     sql_statements = [
         """CREATE TABLE IF NOT EXISTS students (
-                id INTEGER PRIMARY KEY, 
-                age INT NOT NULL
+                id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                age INTEGER NOT NULL
+        );""",
+        """CREATE TABLE IF NOT EXISTS scores (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                score INTEGER,
+                date_match DATETIME,
+                student_id INTEGER NOT NULL,
+            FOREIGN KEY(student_id) REFERENCES students(id)
         );""",
     ]
 
