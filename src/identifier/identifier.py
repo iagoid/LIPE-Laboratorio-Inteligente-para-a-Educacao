@@ -4,8 +4,15 @@
 import src.constants.movements as mov
 import src.poses.poses as poses
 import random
+import cv2
 from cv2.typing import MatLike
+import time
+import os
+from src.constants.constants import DIRECTORY_LOGS_IMAGE 
+import logging
+from pathlib import Path
 
+logging.basicConfig(level=logging.INFO, filename="execucoes.log", format='%(asctime)s - %(levelname)s - %(message)s')
 
 # classe que identifica os movimentos do usuário
 class Identifier(poses.Poses):
@@ -24,14 +31,14 @@ class Identifier(poses.Poses):
 
     def process_image(self, img: MatLike):
         # manda o mediapipe processar a imagem
-        copy_image = img.copy()
-        result_processing = self.pose.process(copy_image)
+        self.copy_image = img.copy()
+        result_processing = self.pose.process(self.copy_image)
         # pego os pontos detectados na imagem
         self.points = result_processing.pose_landmarks
 
         if self.points:  # se foi identificado algum ponto...
             self.mpDraw.draw_landmarks(
-                copy_image, self.points, self.mpPose.POSE_CONNECTIONS
+                self.copy_image, self.points, self.mpPose.POSE_CONNECTIONS
             )
 
             # capturo os dados das posições desejadas para este contexto
@@ -138,18 +145,29 @@ class Identifier(poses.Poses):
 
     def identify_list_movements(self) -> bool | None:
 
-        print(f"Movimento {self.command}")
         if self.MOVEMENTS_METHODS[self.command - 1]():
             return True
 
         for i, fn in enumerate(self.MOVEMENTS_METHODS):
             if fn():
-                print(
-                    f"Movimento Esperado: {mov.MOVEMENTS_ORDER[self.command]}. Retornado {mov.MOVEMENTS_ORDER[i+1]}"
-                )
+                self.save_log(mov.MOVEMENTS_ORDER[self.command], mov.MOVEMENTS_ORDER[i+1])
                 return False
 
         return None
+
+    def save_log(self, mov_command: str, move_identified: str):
+        timestamp = time.time()
+        
+        logging.info(
+            f"{str(timestamp)} - Movimento Esperado: {mov_command}. Retornado {move_identified}"
+        )
+        
+        Path(DIRECTORY_LOGS_IMAGE).mkdir(exist_ok=True)
+
+        cv2.imwrite(
+            DIRECTORY_LOGS_IMAGE + os.sep + str(timestamp) + ".jpg",
+            self.copy_image,
+        )
 
     def qtd_movements(self) -> int:
         return len(self.list_commands)
