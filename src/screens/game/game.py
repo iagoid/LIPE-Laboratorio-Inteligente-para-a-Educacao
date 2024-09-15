@@ -19,6 +19,7 @@ from src.draw.draw import (
     initial_message,
     draw_message,
     draw_points,
+    draw_message_center_screen,
     show_image_movements,
     show_player_image,
     apply_filter,
@@ -66,10 +67,13 @@ class Game:
                     self.executor.shutdown()
 
     def sort_sequence_movements(self):
-        self.my_identifier.sort_movements(self.img.shape[0], self.number_movements)
-        self.sort_movement = False
-        self.is_showing_movements = True
-        self.timer_is_showing_movements = time.perf_counter()
+        self.my_identifier.process_image(self.real_image)
+        if self.my_identifier.sort_movements(self.number_movements):
+            self.sort_movement = False
+            self.is_showing_movements = True
+            self.timer_is_showing_movements = time.perf_counter()
+        else:
+            self.img = draw_message_center_screen(self.img, "Se posicione corretamente.")
 
     def show_movement(self):
         self.img = show_image_movements(

@@ -93,7 +93,7 @@ class Identifier(poses.Poses):
         actual_mid_y = (self.shoulderRY + self.shoulderLY) / 2
 
         # aceita variações de menos de 30%
-        lower_bound = self.standing_mid_y - (self.standing_mid_y * 0.30)
+        lower_bound = self.standing_mid_y - (self.standing_mid_y * 0.3)
 
         if actual_mid_y < lower_bound:
             return True
@@ -111,16 +111,16 @@ class Identifier(poses.Poses):
 
         return False
 
-    def sort_movements(self, height: float, qtd: int = 1):
+    def sort_movements(self, qtd: int = 1)->bool:
         if self.shoulderRY == 0 or self.shoulderLY == 0:
-            self.standing_mid_y = 0.8
-        else:
-            mid_shoulders = (self.shoulderRY + self.shoulderLY) // 2
-            # verifica se a altura dos ombros está aceitavel
-            if (mid_shoulders > height * 0.85) or (mid_shoulders < height * 0.65):
-                self.standing_mid_y = 0.8
-            else:
-                self.standing_mid_y = mid_shoulders
+            return False
+
+        mid_shoulders = (self.shoulderRY + self.shoulderLY) / 2
+        # verifica se a altura dos ombros está aceitavel
+        if (mid_shoulders > 0.8) or (mid_shoulders < 0.2):
+            return False
+
+        self.standing_mid_y = mid_shoulders
 
         self.list_commands = []
         for i in range(qtd):
@@ -128,6 +128,8 @@ class Identifier(poses.Poses):
 
         self.seq_command = 0
         self.command = self.list_commands[self.seq_command]
+        
+        return True
 
     def identify(self) -> bool:
         match self.command:
@@ -159,7 +161,7 @@ class Identifier(poses.Poses):
         timestamp = time.time()
         
         logging.info(
-            f"{str(timestamp)} - Movimento Esperado: {mov_command}. Retornado {move_identified}"
+            f"{str(timestamp)}, Movimento Esperado: {mov_command}, Retornado {move_identified}, handRX: {self.handRX}, handRY: {self.handRY}, handLX: {self.handLX}, handLY: {self.handLY}, noseX: {self.noseX}, noseY: {self.noseY}, shoulderRY: {self.shoulderRY}, shoulderLY: {self.shoulderLY}, standing_mid_y: {self.standing_mid_y}"
         )
         
         Path(DIRECTORY_LOGS_IMAGE).mkdir(exist_ok=True)

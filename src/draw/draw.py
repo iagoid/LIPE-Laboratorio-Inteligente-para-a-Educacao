@@ -182,6 +182,24 @@ def draw_face_positioning(img: MatLike) -> MatLike:
     return cv2.bitwise_and(img, img, mask=mask)
 
 
+
+def draw_message_center_screen(img: MatLike, text: str) -> MatLike:
+    img_height, img_width, _ = img.shape
+
+    pil_image = Image.fromarray(img)
+
+    # Draw non-ascii text onto image
+    font = ImageFont.truetype(FONT_SUPER_SQUAD_PATH, size=40)
+    draw = ImageDraw.Draw(pil_image)
+
+    _, _, text_width, text_height = font.getbbox(text=text, stroke_width=1)
+    textX = int((img_width - text_width) / 2)
+    textY = int((img_height - text_height - 50))
+    draw.text((textX, textY), text, font=font, stroke_width=1, stroke_fill=colors.BLACK)
+
+    image = np.asarray(pil_image)
+    return image
+
 def NextPlayer(img: MatLike) -> MatLike:
     img_height, img_width, _ = img.shape
     text = "PRÓXIMO JOGADOR"

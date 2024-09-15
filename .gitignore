@@ -5,3 +5,4 @@ __pycache__/
 PlayerImages
 LogsImages
 *.db
+*.log
