@@ -152,13 +152,15 @@ def show_player_image(img: MatLike, seq_player: int = None) -> MatLike | None:
 
     textX = int((w_background - text_width) / 2)
     textY = int(pos_y + h_img_prof)
-    draw.text((textX, textY), order, font=font, stroke_width=1, stroke_fill=colors.ORANGE)
+    draw.text(
+        (textX, textY), order, font=font, stroke_width=1, stroke_fill=colors.ORANGE
+    )
     image = np.asarray(pil_image)
 
     return image
 
 
-def apply_filter(img: MatLike, color:tuple[3]) -> MatLike:
+def apply_filter(img: MatLike, color: tuple[3]) -> MatLike:
     blue_layer = np.full(img.shape, color, dtype=np.uint8)
 
     blended_img = cv2.addWeighted(img, 0.5, blue_layer, 0.5, 0)
@@ -182,7 +184,6 @@ def draw_face_positioning(img: MatLike) -> MatLike:
     return cv2.bitwise_and(img, img, mask=mask)
 
 
-
 def draw_message_center_screen(img: MatLike, text: str) -> MatLike:
     img_height, img_width, _ = img.shape
 
@@ -199,6 +200,7 @@ def draw_message_center_screen(img: MatLike, text: str) -> MatLike:
 
     image = np.asarray(pil_image)
     return image
+
 
 def NextPlayer(img: MatLike) -> MatLike:
     img_height, img_width, _ = img.shape
@@ -217,3 +219,75 @@ def NextPlayer(img: MatLike) -> MatLike:
 
     image = np.asarray(pil_image)
     return image
+
+
+def draw_circles(
+    img: MatLike, num_circles: int, last_correct: int, wrong_move: bool = False
+):
+    height, width, _ = img.shape
+    overlay = img.copy()
+
+    radius = 30  # Raio fixo para os círculos
+    margin = 10  # Margem entre os círculos
+
+    # Definir o número de círculos por linha (no máximo 3 por linha)
+    if num_circles <= 3:
+        circles_in_first_line = num_circles
+        draw_second_line = False
+    else:
+        circles_in_first_line = num_circles // 2
+        draw_second_line = True
+
+    font_scale = 1.5
+    font_thickness = 3
+    thickness_border = 5
+    opacity = 0.5
+
+    # Função para desenhar uma linha de círculos
+    def draw_circle_line(start_count: int, num_circles_in_line: int, y_center: int):
+        # Calcular o espaçamento horizontal para centralizar os círculos
+        total_width = (num_circles_in_line + start_count) * (2 * radius + margin) - margin
+        start_x = (width - total_width) // 2
+
+        for i in range(start_count, num_circles_in_line):
+            if last_correct > i:
+                color_circle = colors.GREEN
+                text = "V"
+            elif last_correct == i and wrong_move:
+                color_circle = colors.RED
+                text = "X"
+            else:
+                color_circle = colors.GRAY
+                text = "-"
+
+            center_x = start_x + i * (2 * radius + margin)
+            cv2.circle(img, (center_x, y_center), radius, color_circle, thickness=-1)
+            cv2.circle(img, (center_x, y_center), radius, thickness_border)
+
+            (text_width, text_height), _ = cv2.getTextSize(
+                text, PRIMARY_FONT, font_scale, font_thickness
+            )
+            text_x = center_x - text_width // 2
+            text_y = y_center + text_height // 2
+
+            cv2.putText(
+                img,
+                text,
+                (text_x, text_y),
+                PRIMARY_FONT,
+                font_scale,
+                colors.WHITE,
+                font_thickness,
+            )
+
+    if circles_in_first_line > 0:
+        y_first_line = height - 2 * radius - 50
+        draw_circle_line(0, circles_in_first_line, y_first_line)
+
+    if draw_second_line:
+        y_second_line = height - radius - 20
+        draw_circle_line(circles_in_first_line, num_circles, y_second_line)
+
+    cv2.addWeighted(overlay, opacity, img, 1 - opacity, 0, img)
+
+    return img

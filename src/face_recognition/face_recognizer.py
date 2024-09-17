@@ -44,7 +44,7 @@ class FaceRecognizer:
         for _, unknown_encoding in zip(input_face_locations, input_face_encodings):
             name = self._recognize_face(unknown_encoding)
             if not name:
-                name = NAME_UNKNOWN_PLAYER
+                name = 0
             return name
 
     def _recognize_face(self, unknown_encoding):

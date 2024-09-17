@@ -18,6 +18,7 @@ from src.face_recognition.face_recognizer import FaceRecognizer
 from src.draw.draw import (
     initial_message,
     draw_message,
+    draw_circles,
     draw_points,
     draw_message_center_screen,
     show_image_movements,
@@ -42,6 +43,7 @@ class Game:
         self.is_movement_identified = False
         self.searching_player = False
         self.player_found = False
+        self.is_draw_circles = False
 
         self.number_movements = 3
         self.mov_showing_seq = 0
@@ -86,6 +88,7 @@ class Game:
 
         if delta > 4:
             if self.mov_showing_seq < self.my_identifier.qtd_movements() - 1:
+                self.is_draw_circles = True
                 self.timer_is_showing_movements = time.perf_counter()
                 self.mov_showing_seq += 1
             else:
@@ -116,6 +119,7 @@ class Game:
         self.sort_movement = True
 
         self.is_showing_movements = False
+        self.is_draw_circles = False
 
         if len(self.list_players) == 0:
             print("Não foram identificados jogadores.")
@@ -166,6 +170,9 @@ class Game:
                 else:
                     self.img = video_conf.read()
                     self.real_image = video_conf.real_image()
+                    
+                    if self.is_draw_circles:
+                        draw_circles(self.img, self.number_movements, self.my_identifier.seq_command, self.is_movement_wrong)
 
                     # imgRGB = cv2.cvtColor(
                     #     self.img, cv2.COLOR_BGR2RGB
