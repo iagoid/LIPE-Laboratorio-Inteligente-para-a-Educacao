@@ -240,14 +240,14 @@ def draw_circles(
 
     font_scale = 1.5
     font_thickness = 3
-    thickness_border = 5
+    thickness_border = 10
     opacity = 0.5
 
     # Função para desenhar uma linha de círculos
     def draw_circle_line(start_count: int, num_circles_in_line: int, y_center: int):
         # Calcular o espaçamento horizontal para centralizar os círculos
         total_width = (num_circles_in_line + start_count) * (2 * radius + margin) - margin
-        start_x = (width - total_width) // 2
+        start_x = (width - total_width) // 2 + radius
 
         for i in range(start_count, num_circles_in_line):
             if last_correct > i:

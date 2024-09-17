@@ -110,8 +110,8 @@ class Identifier(poses.Poses):
             return True
 
         return False
-
-    def sort_movements(self, qtd: int = 1)->bool:
+    
+    def is_correct_positioned(self) -> bool:
         if self.shoulderRY == 0 or self.shoulderLY == 0:
             return False
 
@@ -119,17 +119,18 @@ class Identifier(poses.Poses):
         # verifica se a altura dos ombros está aceitavel
         if (mid_shoulders > 0.8) or (mid_shoulders < 0.2):
             return False
-
+        
         self.standing_mid_y = mid_shoulders
-
+        
+        return True
+        
+    def sort_movements(self, qtd: int = 1):
         self.list_commands = []
         for i in range(qtd):
             self.list_commands.append(random.randint(1, len(mov.MOVEMENTS)))
 
         self.seq_command = 0
         self.command = self.list_commands[self.seq_command]
-        
-        return True
 
     def identify(self) -> bool:
         match self.command:
@@ -171,11 +172,17 @@ class Identifier(poses.Poses):
             self.copy_image,
         )
 
+    def has_next_movement(self) -> bool:
+        return self.seq_command < self.qtd_movements() - 1
+
     def qtd_movements(self) -> int:
         return len(self.list_commands)
 
     def seq_command(self) -> int:
         return self.seq_command
+    
+    def reset_seq_command(self):
+        self.seq_command = 0
 
     def command_at(self, pos: int) -> int:
         return self.list_commands[pos]
