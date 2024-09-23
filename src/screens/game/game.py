@@ -26,6 +26,8 @@ from src.draw.draw import (
     show_image_movements,
     show_player_image,
     apply_filter,
+    write_message,
+    show_correct_position
 )
 import random
 from database.students.students import select_students
@@ -47,10 +49,12 @@ class Game:
         self.player_found = False
         self.is_draw_circles = False
         self.movement_correct = False
+        self.is_showing_next_round = False
 
         self.number_movements = INITIAL_NUMBER_MOVEMENTS
         self.mov_showing_seq = 0
         self.player_seq = 0
+        self.num_circles = 0
 
     def find_expected_player(self):
 
@@ -69,9 +73,8 @@ class Game:
                 if int(searched_player) == self.expected_player:
                     print("Iniciando o Jogo")
                     self.player_found = True
-                    self.executor.shutdown()
 
-    def sort_sequence_movements(self):
+    def player_is_positioned(self):
         self.my_identifier.process_image(self.real_image)
         
         if self.my_identifier.is_correct_positioned():
@@ -79,7 +82,7 @@ class Game:
             self.is_showing_movements = True
             self.timer_is_showing_movements = time.perf_counter()
         else:
-            self.img = draw_message_center_screen(self.img, "Se posicione corretamente.")
+            self.img = show_correct_position(self.img)
 
     def show_movement(self):
         self.img = show_image_movements(
@@ -103,6 +106,9 @@ class Game:
         if self.movement_correct:
             message_mov = f"{self.my_identifier.seq_command + 1} - {mov.MOVEMENTS_MESSAGE[self.my_identifier.command]}"
             self.img = draw_message(self.img, message_mov)
+            
+        if self.num_circles == self.my_identifier.seq_command:
+            self.num_circles += 1
         
         delta = time.perf_counter() - self.timer_next_mov
         
@@ -114,15 +120,12 @@ class Game:
                     self.is_movement_wrong = False
                     self.timer_next_mov = time.perf_counter()
                 else:
-                    self.call_next_player()
+                    self.call_next_round()
 
     def call_next_player(self, add_mov: bool = True):
         self.mov_showing_seq = 0
+        self.num_circles = 0
         self.my_identifier.reset_seq_command()
-
-        if add_mov:
-            self.number_movements += 1
-            self.my_identifier.list_commands.append(random.randint(1, len(mov.MOVEMENTS)))
 
         self.is_movement_wrong = False
         self.is_movement_identified = False
@@ -139,6 +142,28 @@ class Game:
             self.player_seq += 1
             if self.player_seq < len(self.list_players):
                 self.expected_player = self.list_players[self.player_seq][0]
+        
+        self.is_showing_next_player = True
+        self.timer_show_player = time.perf_counter()
+        
+    def call_next_round(self):
+        self.mov_showing_seq = 0
+        self.num_circles = 0
+        self.my_identifier.reset_seq_command()
+
+        self.number_movements += 1
+        self.my_identifier.list_commands.append(random.randint(1, len(mov.MOVEMENTS)))
+
+        self.is_movement_wrong = False
+        self.is_movement_identified = False
+        self.sort_movement = True
+
+        self.is_showing_movements = False
+        self.is_draw_circles = False
+        self.movement_correct = False
+
+        self.is_showing_next_round = True
+        self.timer_show_player = time.perf_counter()
 
     def show_next_player(self):
         img_player = show_player_image(self.img, self.expected_player)
@@ -148,19 +173,27 @@ class Game:
 
         self.img = img_player
 
-        delta = time.perf_counter() - self.timer_is_showing_movements
+        delta = time.perf_counter() - self.timer_show_player
         if delta > TIME_SHOW_PLAYER:
             self.is_showing_next_player = False
             self.player_found = False
-
+            
+    def show_message_new_round(self):
+        self.img = write_message(self.img, "PASSOU DE FASE!")
+        
+        delta = time.perf_counter() - self.timer_show_player
+        
+        if delta > TIME_SHOW_PLAYER:
+            self.is_showing_next_round = False
+            self.player_found = False
+        
     def Show(self, width: int, height: int):
         # abre o fluxo de leitura
         # video_conf = VideoConfig(screen_name, "./images/videomaos.mp4") #lê de um vídeo
         video_conf = VideoConfig(screen_name, width=width, height=height)
         video_conf.start()
 
-        self.timer_next_mov = time.perf_counter()
-        self.timer_is_showing_movements = time.perf_counter()
+        self.timer_show_player = time.perf_counter()
 
         self.my_identifier = identifier.Identifier()
         self.my_identifier.sort_movements(self.number_movements)
@@ -185,7 +218,7 @@ class Game:
                     self.real_image = video_conf.real_image()
                     
                     if self.is_draw_circles:
-                        draw_circles(self.img, self.number_movements, self.my_identifier.seq_command, self.is_movement_wrong)
+                        draw_circles(self.img, self.number_movements, self.num_circles, self.is_movement_wrong)
 
                     # imgRGB = cv2.cvtColor(
                     #     self.img, cv2.COLOR_BGR2RGB
@@ -195,6 +228,9 @@ class Game:
                     # face_mesh(img)
                     if self.is_showing_next_player:
                         self.show_next_player()
+                        
+                    elif self.is_showing_next_round:
+                        self.show_message_new_round()
 
                     elif not self.player_found:
                         self.find_expected_player()
@@ -205,7 +241,7 @@ class Game:
 
                         if self.my_identifier.points:
                             if self.sort_movement:
-                                self.sort_sequence_movements()
+                                self.player_is_positioned()
 
                             elif self.is_showing_movements:
                                 self.show_movement()

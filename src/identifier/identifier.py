@@ -129,8 +129,7 @@ class Identifier(poses.Poses):
         for i in range(qtd):
             self.list_commands.append(random.randint(1, len(mov.MOVEMENTS)))
 
-        self.seq_command = 0
-        self.command = self.list_commands[self.seq_command]
+        self.reset_seq_command()
 
     def identify(self) -> bool:
         match self.command:
@@ -183,6 +182,7 @@ class Identifier(poses.Poses):
     
     def reset_seq_command(self):
         self.seq_command = 0
+        self.command = self.list_commands[self.seq_command]
 
     def command_at(self, pos: int) -> int:
         return self.list_commands[pos]

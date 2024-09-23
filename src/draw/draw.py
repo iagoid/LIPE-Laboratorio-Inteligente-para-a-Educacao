@@ -89,7 +89,7 @@ def show_image_movements(img: MatLike, command: int, seq: int = None):
     image_filter = apply_filter(img, colors.BLUE_LIGHT)
 
     img_movement = cv2.imread(
-        "images/" + mov.MOVEMENTS_IMAGES[command], cv2.IMREAD_UNCHANGED
+        "images" + os.sep + mov.MOVEMENTS_IMAGES[command], cv2.IMREAD_UNCHANGED
     )
     img_movement = cv2.resize(img_movement, (0, 0), None, 0.5, 0.5)
 
@@ -160,6 +160,38 @@ def show_player_image(img: MatLike, seq_player: int = None) -> MatLike | None:
     return image
 
 
+def show_correct_position(img: MatLike):
+    image_filter = apply_filter(img, colors.GREEN)
+
+    img_pos = cv2.imread(
+        f"images{os.sep}silhueta.png", cv2.IMREAD_UNCHANGED
+    )
+
+    h_background, w_background, _ = image_filter.shape
+    h_img_mov, w_img_mov, _ = img_pos.shape
+
+    pos_x = (w_background - w_img_mov) // 2
+    pos_y = (h_background - h_img_mov) // 2
+    cvzone.overlayPNG(image_filter, img_pos, [pos_x, pos_y])
+
+    pil_image = Image.fromarray(image_filter)
+
+    order = "SE POSICIONE CORRETAMENTE"
+
+    font = ImageFont.truetype(FONT_SUPER_SQUAD_PATH, size=20)
+    draw = ImageDraw.Draw(pil_image)
+
+    _, _, text_width, text_height = font.getbbox(text=order, stroke_width=1)
+
+    textX = int((w_background - text_width) / 2)
+    textY = int(pos_y + h_img_mov)
+    draw.text(
+        (textX, textY), order, font=font, stroke_width=1, stroke_fill=colors.BLACK
+    )
+    image = np.asarray(pil_image)
+
+    return image
+
 def apply_filter(img: MatLike, color: tuple[3]) -> MatLike:
     blue_layer = np.full(img.shape, color, dtype=np.uint8)
 
@@ -202,9 +234,8 @@ def draw_message_center_screen(img: MatLike, text: str) -> MatLike:
     return image
 
 
-def NextPlayer(img: MatLike) -> MatLike:
+def write_message(img: MatLike, message: str) -> MatLike:
     img_height, img_width, _ = img.shape
-    text = "PRÓXIMO JOGADOR"
 
     pil_image = Image.fromarray(img)
 
@@ -212,10 +243,10 @@ def NextPlayer(img: MatLike) -> MatLike:
     font = ImageFont.truetype(FONT_SUPER_SQUAD_PATH, size=40)
     draw = ImageDraw.Draw(pil_image)
 
-    _, _, text_width, text_height = font.getbbox(text=text, stroke_width=1)
+    _, _, text_width, text_height = font.getbbox(text=message, stroke_width=1)
     textX = int((img_width - text_width) / 2)
     textY = int((img_height - text_height - 50))
-    draw.text((textX, textY), text, font=font, stroke_width=1, stroke_fill=colors.BLACK)
+    draw.text((textX, textY), message, font=font, stroke_width=1, stroke_fill=colors.BLACK)
 
     image = np.asarray(pil_image)
     return image

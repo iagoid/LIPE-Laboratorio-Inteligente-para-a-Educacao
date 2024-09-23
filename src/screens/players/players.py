@@ -11,7 +11,7 @@ from src.face_recognition.face_detect import (
     face_detection_model,
 )
 from random import *
-from src.draw.draw import NextPlayer
+from src.draw.draw import write_message
 from src.speaker import speaker
 from src.utils.utils import string_from_numbers, number_in_words_2_numeric
 import time
@@ -168,7 +168,7 @@ class PlayerScreen:
             # face_mesh(self.img)
             with self.lock:
                 if self.next_player:
-                    self.img = NextPlayer(self.img)
+                    self.img = write_message(self.img, "PRÓXIMO JOGADOR")
 
             cv2.imshow(screen_name, self.img)  # exibe a imagem com os pontos na tela
 
