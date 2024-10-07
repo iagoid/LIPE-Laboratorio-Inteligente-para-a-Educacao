@@ -9,6 +9,7 @@ import src.constants.movements as mov
 import src.constants.colors as colors
 from src.constants.timers import *
 from src.constants.constants import *
+from src.datatypes.confetti import Confetti
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 
@@ -27,11 +28,14 @@ from src.draw.draw import (
     show_player_image,
     apply_filter,
     write_message,
-    show_correct_position
+    show_correct_position,
+    draw_confetti
 )
 import random
 from database.students.students import select_students
 from database.scores.scores import add_score
+from typing import List
+
 
 DEFAULT_ENCODINGS_PATH = Path("output/encodings.pkl")
 
@@ -55,6 +59,8 @@ class Game:
         self.mov_showing_seq = 0
         self.player_seq = 0
         self.num_circles = 0
+
+        self.confetti_particles: List[Confetti] = []
 
     def find_expected_player(self):
 
@@ -163,8 +169,22 @@ class Game:
         self.movement_correct = False
 
         self.is_showing_next_round = True
+        self.sort_confetti()
         self.timer_show_player = time.perf_counter()
 
+    def sort_confetti(self):
+        self.confetti_particles.clear()
+        
+        for _ in range(NUMBER_CONFETTI_PARTICLES): 
+            x = random.randint(0, self.img.shape[1])
+            y = random.randint(-200, self.img.shape[0] // 2)
+            color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+            speed = random.randint(10, 25)
+            
+            confetti = Confetti(PosX=x, PosY=y, Color=color, Speed=speed)
+
+            self.confetti_particles.append(confetti)
+            
     def show_next_player(self):
         img_player = show_player_image(self.img, self.expected_player)
 
@@ -220,6 +240,10 @@ class Game:
                     if self.is_draw_circles:
                         draw_circles(self.img, self.number_movements, self.num_circles, self.is_movement_wrong)
 
+                    if len(self.confetti_particles) > 0:
+                        self.img = draw_confetti(self.img, self.confetti_particles)
+                        self.confetti_particles = [particle for particle in self.confetti_particles if particle.PosY < self.img.shape[0]]
+                    
                     # imgRGB = cv2.cvtColor(
                     #     self.img, cv2.COLOR_BGR2RGB
                     # )  # converte a cor para RGB (posso também utilizar essa imagem no processamento)

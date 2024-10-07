@@ -11,6 +11,8 @@ import cvzone
 import src.constants.movements as mov
 from src.constants.fonts import PRIMARY_FONT, SECONDARY_FONT, FONT_SUPER_SQUAD_PATH
 import os
+from src.datatypes.confetti import Confetti
+from typing import List
 
 
 # TODO: Revisar todas os textos mostrados em tela para utilizar o PIL
@@ -321,4 +323,11 @@ def draw_circles(
 
     cv2.addWeighted(overlay, opacity, img, 1 - opacity, 0, img)
 
+    return img
+
+def draw_confetti(img, confetti_particles: List[Confetti]):
+    for particle in confetti_particles:
+        cv2.circle(img, (particle.PosX, particle.PosY), 5, particle.Color, -1)
+        particle.PosY += particle.Speed
+    
     return img
