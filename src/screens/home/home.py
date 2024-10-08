@@ -23,10 +23,6 @@ class HomeScreen:
         )
 
         self.player_screen = players.PlayerScreen()
-        if DEVELOP_MODE:
-            self.game = game.Game()
-        else:
-            self.loading = loading.Loading(self.window_surface, self.background)
 
     def Show(self):
 
@@ -69,8 +65,10 @@ class HomeScreen:
 
                     elif event.ui_element == btn_play:
                         if DEVELOP_MODE:
+                            self.game = game.Game()
                             self.game.Show(*pygame.display.get_window_size())
                         else:
+                            self.loading = loading.Loading(self.window_surface, self.background)
                             self.loading.Show()
 
                     elif event.ui_element == btn_players:

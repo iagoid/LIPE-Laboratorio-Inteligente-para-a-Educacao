@@ -45,23 +45,28 @@ screen_name = "Identificador de Movimentos"
 # laço de repetição que fica rodando durante toda aplicação
 class Game:
     def __init__(self):
+        self.searching_player = False
+        self.player_found = False
+        self.is_showing_next_round = False
+
+        self.number_movements = INITIAL_NUMBER_MOVEMENTS
+        self.player_seq = 0
+
+        self.confetti_particles: List[Confetti] = []
+        
+        self.reset_variables()
+
+    def reset_variables(self):
         self.sort_movement = True
         self.is_showing_movements = False
         self.is_movement_wrong = False
         self.is_movement_identified = False
-        self.searching_player = False
-        self.player_found = False
         self.is_draw_circles = False
         self.movement_correct = False
-        self.is_showing_next_round = False
 
-        self.number_movements = INITIAL_NUMBER_MOVEMENTS
         self.mov_showing_seq = 0
-        self.player_seq = 0
         self.num_circles = 0
-
-        self.confetti_particles: List[Confetti] = []
-
+    
     def find_expected_player(self):
 
         if not self.searching_player:
@@ -129,17 +134,9 @@ class Game:
                     self.call_next_round()
 
     def call_next_player(self, add_mov: bool = True):
-        self.mov_showing_seq = 0
-        self.num_circles = 0
+        self.reset_variables()
+        
         self.my_identifier.reset_seq_command()
-
-        self.is_movement_wrong = False
-        self.is_movement_identified = False
-        self.sort_movement = True
-
-        self.is_showing_movements = False
-        self.is_draw_circles = False
-        self.movement_correct = False
 
         if len(self.list_players) == 0:
             print("Não foram identificados jogadores.")
