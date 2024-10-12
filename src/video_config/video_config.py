@@ -3,7 +3,7 @@
 
 import cv2
 from threading import Thread
-
+import time
 
 class VideoConfig:
     def __str__(self):
@@ -16,17 +16,18 @@ class VideoConfig:
         cv2.setWindowProperty(
             screen_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN
         )
-        
+        cv2.setUseOptimized(True) 
+                
         # abre o fluxo de leitura
-        self.video = cv2.VideoCapture(video_source, cv2.CAP_DSHOW)
-        if self.video.isOpened() is False:
+        self.video_cap = cv2.VideoCapture(video_source, cv2.CAP_DSHOW)
+        if self.video_cap.isOpened() is False:
             print("[Exiting]: Erro ao acessar a WebCam.")
             exit(0)
 
         self.set_screen_size(width, height)
-        self.video.set(cv2.CAP_PROP_FPS, 30)
+        self.video_cap.set(cv2.CAP_PROP_FPS, 30)
 
-        self.grabbed, self.frame = self.video.read()
+        self.grabbed, self.frame = self.video_cap.read()
         if self.grabbed is False:
             print("[Exiting] Não existem mais frames para leitura")
             exit(0)
@@ -35,8 +36,13 @@ class VideoConfig:
 
         self.t = Thread(target=self.update, args=())
         self.t.daemon = True  # daemon threads keep running in the background while the program is executing
-
-        cv2.namedWindow(screen_name)
+        
+        real_width = int(self.video_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        real_height = int(self.video_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        codec = cv2.VideoWriter_fourcc(*'MP4V')  # Codec para o formato AVI
+        
+        timestamp = time.time()
+        self.out_cap = cv2.VideoWriter(f'{timestamp}-saida.mp4', codec, 30.0, (real_width, real_height))
 
     def start(self):
         self.stopped = False
@@ -46,20 +52,23 @@ class VideoConfig:
         while True:
             if self.stopped is True:
                 break
-            self.grabbed, self.frame = self.video.read()
+            self.grabbed, self.frame = self.video_cap.read()
             if self.grabbed is False:
                 print("[Exiting] Não existem mais frames para leitura")
                 self.stopped = True
                 break
-
-        self.video.release()
+                        
+            self.write()
+                    
+        self.video_cap.release()
+        self.out_cap.release()
 
     def set_screen_size(self, screen_width: int, screen_height: int):
         self.screen_width = int(screen_width)
         self.screen_height = int(screen_height)
 
-        self.video.set(cv2.CAP_PROP_FRAME_WIDTH, screen_width)
-        self.video.set(cv2.CAP_PROP_FRAME_HEIGHT, screen_height)
+        self.video_cap.set(cv2.CAP_PROP_FRAME_WIDTH, screen_width)
+        self.video_cap.set(cv2.CAP_PROP_FRAME_HEIGHT, screen_height)
 
     def read(self):
         return cv2.flip(self.frame, 1)
@@ -70,12 +79,16 @@ class VideoConfig:
 
     def stop(self):
         self.stopped = True
+        self.t.join()
 
     def video(self) -> cv2.VideoCapture:
-        return self.video
+        return self.video_cap
 
     def height(self) -> int:
         return self.screen_height
 
     def width(self) -> int:
         return self.screen_width
+    
+    def write(self):
+        self.out_cap.write(self.read())
