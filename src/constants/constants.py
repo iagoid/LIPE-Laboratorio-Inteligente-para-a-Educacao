@@ -5,6 +5,7 @@ DEVELOP_MODE = True
 HARCASCADEPATH = "models" + os.sep + "haarcascade_frontalface_default.xml"
 DIRECTORY_IMAGE_PLAYER = "PlayerImages"
 DIRECTORY_LOGS_IMAGE = "LogsImages"
+DIRECTORY_CAPTURES = "Captures"
 DIRECTORY_CSV_PLAYERS = DIRECTORY_IMAGE_PLAYER + os.sep + "players.csv"
 
 NAME_UNKNOWN_PLAYER = "UNKNOWN"

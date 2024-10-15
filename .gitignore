@@ -4,5 +4,6 @@ __pycache__/
 *$py.class
 PlayerImages
 LogsImages
+Captures
 *.db
 *.log

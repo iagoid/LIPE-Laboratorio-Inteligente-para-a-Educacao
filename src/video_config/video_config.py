@@ -4,6 +4,10 @@
 import cv2
 from threading import Thread
 import time
+from cv2.typing import MatLike
+from src.constants.constants import DIRECTORY_IMAGE_PLAYER, DIRECTORY_CAPTURES
+import os
+
 
 class VideoConfig:
     def __str__(self):
@@ -16,8 +20,8 @@ class VideoConfig:
         cv2.setWindowProperty(
             screen_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN
         )
-        cv2.setUseOptimized(True) 
-                
+        cv2.setUseOptimized(True)
+
         # abre o fluxo de leitura
         self.video_cap = cv2.VideoCapture(video_source, cv2.CAP_DSHOW)
         if self.video_cap.isOpened() is False:
@@ -36,13 +40,18 @@ class VideoConfig:
 
         self.t = Thread(target=self.update, args=())
         self.t.daemon = True  # daemon threads keep running in the background while the program is executing
-        
+
         real_width = int(self.video_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         real_height = int(self.video_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        codec = cv2.VideoWriter_fourcc(*'MP4V')  # Codec para o formato AVI
-        
+        codec = cv2.VideoWriter_fourcc(*"MP4V")  # Codec para o formato AVI
+
         timestamp = time.time()
-        self.out_cap = cv2.VideoWriter(f'{timestamp}-saida.mp4', codec, 30.0, (real_width, real_height))
+        self.out_cap = cv2.VideoWriter(
+            f"{DIRECTORY_CAPTURES}{os.sep}{timestamp}-saida.mp4",
+            codec,
+            20.0,
+            (real_width, real_height),
+        )
 
     def start(self):
         self.stopped = False
@@ -57,9 +66,7 @@ class VideoConfig:
                 print("[Exiting] Não existem mais frames para leitura")
                 self.stopped = True
                 break
-                        
-            self.write()
-                    
+
         self.video_cap.release()
         self.out_cap.release()
 
@@ -70,11 +77,11 @@ class VideoConfig:
         self.video_cap.set(cv2.CAP_PROP_FRAME_WIDTH, screen_width)
         self.video_cap.set(cv2.CAP_PROP_FRAME_HEIGHT, screen_height)
 
-    def read(self):
+    def read(self) -> MatLike:
         return cv2.flip(self.frame, 1)
-    
-    #imagem real sem a inversão
-    def real_image(self):
+
+    # imagem real sem a inversão
+    def real_image(self) -> MatLike:
         return self.frame
 
     def stop(self):
@@ -89,6 +96,6 @@ class VideoConfig:
 
     def width(self) -> int:
         return self.screen_width
-    
-    def write(self):
-        self.out_cap.write(self.read())
+
+    def write(self, img: MatLike):
+        self.out_cap.write(img)

@@ -161,7 +161,7 @@ class Identifier(poses.Poses):
         timestamp = time.time()
         
         logging.info(
-            f"{str(timestamp)}, Movimento Esperado: {mov_command}, Retornado {move_identified}, handRX: {self.handRX}, handRY: {self.handRY}, handLX: {self.handLX}, handLY: {self.handLY}, noseX: {self.noseX}, noseY: {self.noseY}, shoulderRY: {self.shoulderRY}, shoulderLY: {self.shoulderLY}, standing_mid_y: {self.standing_mid_y}"
+            f"{str(timestamp)}, Movimento Esperado: {mov_command}, Retornado: {move_identified}, handRX: {self.handRX}, handRY: {self.handRY}, handLX: {self.handLX}, handLY: {self.handLY}, noseX: {self.noseX}, noseY: {self.noseY}, shoulderRY: {self.shoulderRY}, shoulderLY: {self.shoulderLY}, standing_mid_y: {self.standing_mid_y}"
         )
         
         Path(DIRECTORY_LOGS_IMAGE).mkdir(exist_ok=True)

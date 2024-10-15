@@ -298,9 +298,11 @@ class Game:
                                 )
                                 self.show_identified_movement()
 
+                    video_conf.write(self.img)
+                    
                     cv2.imshow(
                         screen_name, self.img
-                    )  # exibe a imagem com os pontos na tela
+                    )
 
                 # verifica que teclas foram apertadas
                 tecla = cv2.waitKey(
