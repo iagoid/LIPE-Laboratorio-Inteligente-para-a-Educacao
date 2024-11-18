@@ -4,14 +4,18 @@
 import pygame
 import pygame_gui
 from src.screens.players import players
-from src.screens.game_mode import game_mode
+from src.screens.loading import loading
+from src.screens.game.condition_game import ConditionGame
+from src.screens.game.sequence_game import SequenceGame
+from src.constants.constants import DEVELOP_MODE
+from src.constants.game_modes import SEQUENCE, CONDITION, ITERATION
 
-class HomeScreen:
+class GameMode:
     def __init__(self):
         pygame.init()
         pygame.display.set_caption("LIFE: Lab of Artificial Inteligence for Education")
         self.window_surface = pygame.display.set_mode((1920, 1080), pygame.FULLSCREEN)
-
+        
         self.background = pygame.image.load("images/background.jpg")
         self.window_surface.blit(self.background, (0, 0))
         self.manager = pygame_gui.UIManager(
@@ -23,23 +27,23 @@ class HomeScreen:
 
     def Show(self):
 
-        btn_play = pygame_gui.elements.UIButton(
+        btn_sequence = pygame_gui.elements.UIButton(
             pygame.Rect(0, -120, 500, 100),
-            "JOGAR",
+            "SEQUÊNCIA",
             self.manager,
             anchors={"centerx": "centerx", "centery": "centery"},
         )
 
-        btn_players = pygame_gui.elements.UIButton(
+        btn_condition = pygame_gui.elements.UIButton(
             pygame.Rect(0, 0, 500, 100),
-            "JOGADORES",
+            "CONDIÇÃO",
             self.manager,
             anchors={"centerx": "centerx", "centery": "centery"},
         )
 
-        btn_quit = pygame_gui.elements.UIButton(
+        btn_iteration = pygame_gui.elements.UIButton(
             pygame.Rect(0, 120, 500, 100),
-            "SAIR",
+            "ITERAÇÃO",
             self.manager,
             anchors={"centerx": "centerx", "centery": "centery"},
         )
@@ -57,18 +61,34 @@ class HomeScreen:
                         is_running = False
 
                 elif event.type == pygame_gui.UI_BUTTON_PRESSED:
-                    if event.ui_element == btn_quit:
-                        is_running = False
+                    if event.ui_element == btn_sequence:
+                        self.game = SequenceGame()
+                        
+                        if DEVELOP_MODE:
+                            self.game.start(*pygame.display.get_window_size())
+                        else:
+                            self.loading = loading.Loading(self.window_surface, self.background)
+                            self.loading.Show(self.game)
 
-                    elif event.ui_element == btn_play:
-                        self.game_mode = game_mode.GameMode()
-                        self.game_mode.Show()
-
-                    elif event.ui_element == btn_players:
-                        pygame.display.set_mode(flags=pygame.HIDDEN)
-                        self.player_screen.Show(*pygame.display.get_window_size())
-                        pygame.display.set_mode(flags=pygame.SHOWN)
-
+                    elif event.ui_element == btn_condition:
+                        self.game = ConditionGame()
+                            
+                        if DEVELOP_MODE:
+                            self.game.start(*pygame.display.get_window_size())
+                        else:
+                            self.loading = loading.Loading(self.window_surface, self.background)
+                            self.loading.Show(self.game)
+                        
+                    elif event.ui_element == btn_iteration:
+                        # self.game = IterationGame()
+                        # if DEVELOP_MODE:
+                        #     self.game.start(*pygame.display.get_window_size())
+                        #     pass
+                        # else:
+                        #     self.loading = loading.Loading(self.window_surface, self.background)
+                        #     self.loading.Show(self.game)
+                        pass
+                        
                 self.manager.process_events(event)
 
             self.manager.set_window_resolution(

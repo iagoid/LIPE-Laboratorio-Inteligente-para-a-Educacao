@@ -8,11 +8,16 @@ import cv2
 from cv2.typing import MatLike
 import time
 import os
-from src.constants.constants import DIRECTORY_LOGS_IMAGE 
+from src.constants.constants import DIRECTORY_LOGS_IMAGE
 import logging
 from pathlib import Path
 
-logging.basicConfig(level=logging.INFO, filename="execucoes.log", format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO,
+    filename="execucoes.log",
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
+
 
 # classe que identifica os movimentos do usuário
 class Identifier(poses.Poses):
@@ -110,7 +115,7 @@ class Identifier(poses.Poses):
             return True
 
         return False
-    
+
     def is_correct_positioned(self) -> bool:
         if self.shoulderRY == 0 or self.shoulderLY == 0:
             return False
@@ -119,9 +124,9 @@ class Identifier(poses.Poses):
         # verifica se a altura dos ombros está aceitavel
         if (mid_shoulders > 0.8) or (mid_shoulders < 0.2):
             return False
-        
+
         self.standing_mid_y = mid_shoulders
-        
+
         return True
         
     def sort_movements(self, qtd: int = 1):

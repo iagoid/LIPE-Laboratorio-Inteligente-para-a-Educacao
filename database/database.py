@@ -1,6 +1,6 @@
 import sqlite3
 
-DATABASE_FILE = './database.db'
+DATABASE_FILE = './database/database.db'
 
 def create_sqlite_database():
     """create a database connection to an SQLite database"""
@@ -42,6 +42,11 @@ def create_tables():
         print(e)
 
 
-if __name__ == "__main__":
+def generate_database():
     create_sqlite_database()
     create_tables()
+    
+if __name__ == "__main__":
+    DATABASE_FILE = './database.db'
+    
+    generate_database()

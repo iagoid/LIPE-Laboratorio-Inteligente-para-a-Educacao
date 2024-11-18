@@ -331,3 +331,20 @@ def draw_confetti(img, confetti_particles: List[Confetti]):
         particle.PosY += particle.Speed
     
     return img
+
+def draw_text_top_right(img: MatLike, order: str) ->MatLike:
+    pil_image = Image.fromarray(img)
+
+    img_height, img_width, _ = img.shape
+
+    font = ImageFont.truetype(FONT_SUPER_SQUAD_PATH, size=20)
+
+    _, _, text_width, text_height = font.getbbox(text=order, stroke_width=1)
+
+    textX = int((img_width - text_width)) - 20
+    textY = 0
+    
+    draw = ImageDraw.Draw(pil_image)
+
+    draw.text((textX, textY), order, font=font, stroke_width=1, stroke_fill=colors.BLACK)
+    return np.asarray(pil_image)

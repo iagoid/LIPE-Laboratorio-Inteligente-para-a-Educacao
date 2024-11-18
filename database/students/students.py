@@ -1,20 +1,29 @@
+import sys
 import sqlite3
 from pathlib import Path
 import os
-dir = os.path.dirname(__file__)
-filename = os.path.join(dir, '../database.db')
 
-def add_student(student)->int | None:
+sys.path.append(str(Path(__file__).parent.parent.parent))
+
+from src.datatypes.player import Player
+
+
+dir = os.path.dirname(__file__)
+filename = os.path.join(dir, "../database.db")
+
+
+def add_student(student: Player) -> int | None:
     try:
         with sqlite3.connect(filename) as conn:
             sql = "INSERT INTO students(age) VALUES(?)"
             cur = conn.cursor()
-            cur.execute(sql, (student))
+            cur.execute(sql, (student.Age,))
             conn.commit()
             return cur.lastrowid
     except sqlite3.Error as e:
         print(e)
         return 0
+
 
 def select_student():
     try:
@@ -28,22 +37,23 @@ def select_student():
         print(e)
 
 
-def select_max_id()->int:
+def select_max_id() -> int:
     try:
         with sqlite3.connect(filename) as conn:
             cur = conn.cursor()
             cur.execute("SELECT MAX(id) FROM students")
             row = cur.fetchone()
-            
+
             if row[0] is None:
                 return 0
-            
+
             return row[0]
     except sqlite3.Error as e:
         print(e)
         return 0
 
-def select_students()->list[object]:
+
+def select_students() -> list[object]:
     try:
         with sqlite3.connect(filename) as conn:
             cur = conn.cursor()
@@ -55,7 +65,7 @@ def select_students()->list[object]:
 
 
 def main():
-    student = (22,)
+    student = Player(1, "Teste", 22)
     student_id = add_student(student)
     print(f"Created a student with the id {student_id}")
 

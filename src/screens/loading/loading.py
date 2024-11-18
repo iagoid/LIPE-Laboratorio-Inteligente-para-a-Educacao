@@ -9,6 +9,7 @@ from src.globals.variables import Loading_Counter
 from threading import Lock
 import random
 import multiprocessing
+from src.interfaces.game_mode import IGameMode
 
 class Loading:
     def __init__(self, window_surface, background):
@@ -22,7 +23,7 @@ class Loading:
         self.lock = Lock()
         self.game = game.Game()
 
-    def Show(self):
+    def Show(self, game_mode:IGameMode):
         global Loading_Counter
         loading_phrases = [
             "Segure firme! Ação intensa a caminho!",
@@ -32,8 +33,15 @@ class Loading:
             "Pense rápido! Estamos quase prontos para começar!",
             "Um momento... estamos ajustando o aprendizado!",
             "Carregamendo movimentos...",
-            "Buscando as respostas no Chat GPT",
             "Aquecendo seus músculos digitais...",
+            "Acordando o LiPE",
+            "Desenferrujando os neurônios",
+            "Aprendendo algoritmos",
+            "Codificando aventuras para você e o Lipe!",
+            "Calibrando as engrenagens da criatividade!",
+            "Decifrando segredos do mundo da programação...",
+            "Lipe está recarregando a energia para aprender!",
+            "Conectando o Lipe ao mundo dos códigos..."
         ]
         
         prg_loading = pygame_gui.elements.UIProgressBar(
@@ -86,7 +94,7 @@ class Loading:
         with lock:
             if shared_Loading_Counter.value >= 100:
                 pygame.display.set_mode(flags=pygame.HIDDEN)
-                self.game.Show(*pygame.display.get_window_size())
+                self.game.Show(*pygame.display.get_window_size(), game_mode)
                 pygame.display.set_mode(flags=pygame.SHOWN)
             else:
                 proc.terminate()

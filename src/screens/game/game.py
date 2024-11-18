@@ -12,6 +12,7 @@ from src.constants.constants import *
 from src.datatypes.confetti import Confetti
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
+from src.constants.game_modes import *
 
 from src.face_recognition.face_detect import (
     face_detection,
@@ -35,7 +36,8 @@ import random
 from database.students.students import select_students
 from database.scores.scores import add_score
 from typing import List
-
+from typing import Union
+from src.interfaces.game_mode import IGameMode
 
 DEFAULT_ENCODINGS_PATH = Path("output/encodings.pkl")
 
@@ -44,7 +46,7 @@ screen_name = "Identificador de Movimentos"
 
 # laço de repetição que fica rodando durante toda aplicação
 class Game:
-    def __init__(self):
+    def __init__(self):       
         self.searching_player = False
         self.player_found = False
         self.is_showing_next_round = False
@@ -66,7 +68,7 @@ class Game:
 
         self.mov_showing_seq = 0
         self.num_circles = 0
-    
+        
     def find_expected_player(self):
 
         if not self.searching_player:
@@ -204,7 +206,12 @@ class Game:
             self.is_showing_next_round = False
             self.player_found = False
         
-    def Show(self, width: int, height: int):
+    def Show(self, width: int, height: int, game_mode:IGameMode):
+        self.game_mode = game_mode
+        
+        self.reset_variables()
+        self.game_mode.reset_variables_mode()
+        
         # abre o fluxo de leitura
         # video_conf = VideoConfig(screen_name, "./images/videomaos.mp4") #lê de um vídeo
         video_conf = VideoConfig(screen_name, width=width, height=height)
