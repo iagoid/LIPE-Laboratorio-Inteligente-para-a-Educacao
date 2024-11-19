@@ -6,7 +6,7 @@ from src.face_recognition.face_recognizer import FaceRecognizer
 from src.globals.variables import Loading_Counter
 import os
 from threading import Lock
-
+from src.constants.constants import NUM_IMAGES_USE_TRAINING
 import face_recognition
 import sys
 
@@ -48,26 +48,31 @@ def encode_known_faces(shared_loading_counter = 0, lock =  None,
     lock = Lock()
 
     players_count = 1
-    total_players = len(list(Path(PATH_TRAINING).glob("*/*")))
+    total_players = len(list(Path(PATH_TRAINING).iterdir()))
 
     names = []
     encodings = []
 
-    for filepath in Path(PATH_TRAINING).glob("*/*"):
-        name = filepath.parent.name
-        image = face_recognition.load_image_file(filepath)
+    for subdir in Path(PATH_TRAINING).iterdir():
+        if subdir.is_dir(): 
+            for num_of_picture, filepath in enumerate(subdir.glob("*.*")): 
+                image = face_recognition.load_image_file(filepath)
 
-        face_locations = face_recognition.face_locations(image, model=model)
-        face_encodings = face_recognition.face_encodings(image, face_locations)
+                face_locations = face_recognition.face_locations(image, model=model)
+                face_encodings = face_recognition.face_encodings(image, face_locations)
 
-        for encoding in face_encodings:
-            names.append(name)
-            encodings.append(encoding)
+                for encoding in face_encodings:
+                    names.append(subdir.name)
+                    encodings.append(encoding)
+                    
+                if num_of_picture >= NUM_IMAGES_USE_TRAINING - 1:
+                    break
 
         if not lock is None:
             with lock:
                 shared_loading_counter.value = round(players_count / total_players * 100, 1)
         players_count += 1
+        
     name_encodings = {"names": names, "encodings": encodings}
     with encodings_location.open(mode="wb") as f:
         pickle.dump(name_encodings, f)

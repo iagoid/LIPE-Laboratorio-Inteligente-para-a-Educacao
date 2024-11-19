@@ -1,6 +1,7 @@
 import os
 
 DEVELOP_MODE = True
+NUM_IMAGES_USE_TRAINING = 5
 
 HARCASCADEPATH = "models" + os.sep + "haarcascade_frontalface_default.xml"
 DIRECTORY_IMAGE_PLAYER = "PlayerImages"

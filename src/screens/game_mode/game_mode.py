@@ -8,7 +8,6 @@ from src.screens.loading import loading
 from src.screens.game.condition_game import ConditionGame
 from src.screens.game.sequence_game import SequenceGame
 from src.constants.constants import DEVELOP_MODE
-from src.constants.game_modes import SEQUENCE, CONDITION, ITERATION
 
 class GameMode:
     def __init__(self):
@@ -26,7 +25,13 @@ class GameMode:
         self.player_screen = players.PlayerScreen()
 
     def Show(self):
-
+        btn_back = pygame_gui.elements.UIButton(
+            pygame.Rect(5, 5, 150, 50),
+            "VOLTAR",
+            self.manager,
+            anchors={"left": "left", "top": "top"},
+        )
+        
         btn_sequence = pygame_gui.elements.UIButton(
             pygame.Rect(0, -120, 500, 100),
             "SEQUÊNCIA",
@@ -56,12 +61,12 @@ class GameMode:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     is_running = False
-                elif event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
-                    if event.key == pygame.K_ESCAPE:
-                        is_running = False
 
                 elif event.type == pygame_gui.UI_BUTTON_PRESSED:
-                    if event.ui_element == btn_sequence:
+                    if event.ui_element == btn_back:
+                        is_running = False
+                        
+                    elif event.ui_element == btn_sequence:
                         self.game = SequenceGame()
                         
                         if DEVELOP_MODE:
@@ -101,4 +106,4 @@ class GameMode:
 
             pygame.display.update()
 
-        pygame.quit()
+        pygame.event.clear()

@@ -44,7 +44,6 @@ DEFAULT_ENCODINGS_PATH = Path("output/encodings.pkl")
 screen_name = "Identificador de Movimentos"
 
 
-# laço de repetição que fica rodando durante toda aplicação
 class Game:
     def __init__(self):       
         self.searching_player = False
@@ -55,7 +54,7 @@ class Game:
         self.player_seq = 0
 
         self.confetti_particles: List[Confetti] = []
-        
+        self.get_serial_number()
         self.reset_variables()
 
     def reset_variables(self):
@@ -69,6 +68,18 @@ class Game:
         self.mov_showing_seq = 0
         self.num_circles = 0
         
+    def add_number_id(self):
+        self.serial_id += 1
+        with open("serial_id.txt", "w") as f:
+            f.write(str(self.serial_id))
+
+    def get_serial_number(self):
+        try:
+            with open("serial_id.txt", "r") as f:
+                self.serial_id = int(f.read())
+        except FileNotFoundError:
+            self.serial_id = 1
+            
     def find_expected_player(self):
 
         if not self.searching_player:
@@ -89,7 +100,7 @@ class Game:
 
     def player_is_positioned(self):
         self.my_identifier.process_image(self.real_image)
-        
+
         if self.my_identifier.is_correct_positioned():
             self.sort_movement = False
             self.is_showing_movements = True
@@ -277,7 +288,9 @@ class Game:
                             elif not self.is_movement_identified and not self.is_movement_wrong:
                                 # Verifico se existe a necessidade de realizar um novo sorteio
                                 self.movement_correct = (
-                                    self.my_identifier.identify_list_movements()
+                                    self.my_identifier.identify_list_movements(
+                                        self.serial_id
+                                    )
                                 )
 
                                 if self.movement_correct is None:
@@ -301,7 +314,9 @@ class Game:
                                     self.call_next_player(False)
                             elif self.is_movement_identified:
                                 self.movement_correct = (
-                                    self.my_identifier.identify_list_movements()
+                                    self.my_identifier.identify_list_movements(
+                                        self.serial_id
+                                    )
                                 )
                                 self.show_identified_movement()
 
@@ -309,7 +324,7 @@ class Game:
                     
                     cv2.imshow(
                         screen_name, self.img
-                    )
+                    )  # exibe a imagem com os pontos na tela
 
                 # verifica que teclas foram apertadas
                 tecla = cv2.waitKey(

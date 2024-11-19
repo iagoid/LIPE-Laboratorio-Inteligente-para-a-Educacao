@@ -6,20 +6,20 @@ from speech_recognition import AudioData
 import json
 from src.speaker.text_reader import SpeakText
 import whisper
-
+import os
 
 class SpeakerMic:
     def __init__(self) -> None:
         self.rec = sr.Recognizer()
 
-    def SpeakRecongnize(self, order: str) -> str:
+    def SpeakRecongnize(self, order: str, file_name:int) -> str:
         try:
             if order:
                 SpeakText(order)
             with sr.Microphone() as mic:
                 self.rec.adjust_for_ambient_noise(mic, 0.2)
                 audio = self.rec.listen(mic, phrase_time_limit=8)
-                return self.RecongnizeWhisperSave(audio=audio)
+                return self.RecongnizeWhisperSave(audio=audio, file_name=file_name)
 
         except sr.RequestError:
             return "Não Identificado"
@@ -54,9 +54,8 @@ class SpeakerMic:
         except sr.UnknownValueError:
             return "Valor não reconhecido"
 
-    def RecongnizeWhisperSave(self, audio: AudioData) -> str:
+    def RecongnizeWhisperSave(self, audio: AudioData, file_name:str) -> str:
         try:
-            file_name = "audio_file.wav"
             with open(file_name, "wb") as file:
                 file.write(audio.get_wav_data())
 

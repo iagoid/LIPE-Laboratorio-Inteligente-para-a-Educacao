@@ -43,7 +43,7 @@ class VideoConfig:
 
         real_width = int(self.video_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         real_height = int(self.video_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        codec = cv2.VideoWriter_fourcc(*"MP4V")  # Codec para o formato AVI
+        codec = cv2.VideoWriter_fourcc(*"mp4v")  # Codec para o formato AVI
 
         timestamp = time.time()
         self.out_cap = cv2.VideoWriter(

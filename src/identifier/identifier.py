@@ -150,29 +150,45 @@ class Identifier(poses.Poses):
             case mov.CROUCH:
                 return self.crouch_identifier()
 
-    def identify_list_movements(self) -> bool | None:
+    def identify_list_movements(self, serial_id: int) -> bool | None:
+        self.identified_movement = None
 
         if self.MOVEMENTS_METHODS[self.command - 1]():
+            self.identified_movement = self.command
+            self.save_log(
+                mov.MOVEMENTS_ORDER[self.command], mov.MOVEMENTS_ORDER[self.command], serial_id
+            )
             return True
 
         for i, fn in enumerate(self.MOVEMENTS_METHODS):
             if fn():
-                self.save_log(mov.MOVEMENTS_ORDER[self.command], mov.MOVEMENTS_ORDER[i+1])
+                self.identified_movement = i + 1
+                self.save_log(
+                    mov.MOVEMENTS_ORDER[self.command],
+                    mov.MOVEMENTS_ORDER[i + 1],
+                    serial_id,
+                )
                 return False
 
         return None
 
-    def save_log(self, mov_command: str, move_identified: str):
+    def save_log(self, mov_command: str, move_identified: str, serial_id: int):
         timestamp = time.time()
-        
+
         logging.info(
-            f"{str(timestamp)}, Movimento Esperado: {mov_command}, Retornado: {move_identified}, handRX: {self.handRX}, handRY: {self.handRY}, handLX: {self.handLX}, handLY: {self.handLY}, noseX: {self.noseX}, noseY: {self.noseY}, shoulderRY: {self.shoulderRY}, shoulderLY: {self.shoulderLY}, standing_mid_y: {self.standing_mid_y}"
+            f"{serial_id} - {str(timestamp)}, Movimento Esperado: {mov_command}, Retornado: {move_identified}, handRX: {self.handRX}, handRY: {self.handRY}, handLX: {self.handLX}, handLY: {self.handLY}, noseX: {self.noseX}, noseY: {self.noseY}, shoulderRY: {self.shoulderRY}, shoulderLY: {self.shoulderLY}, standing_mid_y: {self.standing_mid_y}"
         )
-        
+
         Path(DIRECTORY_LOGS_IMAGE).mkdir(exist_ok=True)
 
         cv2.imwrite(
-            DIRECTORY_LOGS_IMAGE + os.sep + str(timestamp) + ".jpg",
+            DIRECTORY_LOGS_IMAGE
+            + os.sep
+            + "#"
+            + str(serial_id)
+            + "_"
+            + str(timestamp)
+            + ".jpg",
             self.copy_image,
         )
 
@@ -184,7 +200,7 @@ class Identifier(poses.Poses):
 
     def seq_command(self) -> int:
         return self.seq_command
-    
+
     def reset_seq_command(self):
         self.seq_command = 0
         self.command = self.list_commands[self.seq_command]
