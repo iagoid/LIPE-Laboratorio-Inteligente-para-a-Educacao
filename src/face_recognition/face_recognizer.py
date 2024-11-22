@@ -28,24 +28,27 @@ class FaceRecognizer:
         model: str = "hog",
     ) -> str:
         # reconhecimento de imagens salva os captadas
-        if type(img) is str:
-            img = face_recognition.load_image_file(img)
+        try:
+            if type(img) is str:
+                img = face_recognition.load_image_file(img)
 
-        # redimensiona a imagem para melhorar a velocidade
-        # small_img = cv2.resize(img, None, fx=0.5, fy=0.5)
-        input_face_locations = face_recognition.face_locations(img, model=model)
-        
-        time.sleep(3)
-        
-        input_face_encodings = face_recognition.face_encodings(
-            img, input_face_locations
-        )
+            # redimensiona a imagem para melhorar a velocidade
+            # small_img = cv2.resize(img, None, fx=0.5, fy=0.5)
+            input_face_locations = face_recognition.face_locations(img, model=model)
+            
+            time.sleep(3)
+            
+            input_face_encodings = face_recognition.face_encodings(
+                img, input_face_locations
+            )
 
-        for _, unknown_encoding in zip(input_face_locations, input_face_encodings):
-            name = self._recognize_face(unknown_encoding)
-            if not name:
-                name = 0
-            return name
+            for _, unknown_encoding in zip(input_face_locations, input_face_encodings):
+                name = self._recognize_face(unknown_encoding)
+                if not name:
+                    name = 0
+                return name
+        except:
+            return ""
 
     def _recognize_face(self, unknown_encoding):
         """

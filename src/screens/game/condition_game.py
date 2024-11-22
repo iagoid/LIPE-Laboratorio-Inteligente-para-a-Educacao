@@ -3,40 +3,107 @@
 
 from src.constants.game_modes import CONDITION
 from src.constants.movements import *
-from src.constants.colors import RED, BLUE, GREEN, YELLOW
+from src.constants.colors import RED, BLUE, BLUE_LIGHT, GREEN, YELLOW
 from src.screens.game.game import Game
 import random
 from src.interfaces.game_mode import IGameMode
+from src.draw.draw import (
+    show_image_movements,
+    apply_filter,
+    write_message,
+)
+import time
+from src.constants.constants import *
+from src.constants.timers import *
+import src.constants.colors as colors
 
 
 class ConditionGame(IGameMode, Game):
     def __init__(self):
         Game.__init__(self)
 
-        self.mode = CONDITION
+        self._mode = CONDITION
+        self._list_movements = [LEFT_HAND, RIGHT_HAND]
+
+    def show_movement(self):
+        if not self.is_showing_representation:
+            self.is_showing_representation = True
+            self.color_move_representation()
+        
+        if not self.is_showed_representation:
+            self.show_representation_movement()
+            return
+
+        self.img = show_image_movements(
+            img=self.img,
+            seq=self.mov_showing_seq + 1,
+            color_background=self.move_in_colors.get(self.my_identifier.list_commands[self.mov_showing_seq]),
+            show_image=False
+        )
+        self.is_draw_circles = True
+
+        delta = time.perf_counter() - self.timer_is_showing_movements
+
+        if delta > TIME_NEXT_MOVE:
+            if self.mov_showing_seq < self.my_identifier.qtd_movements() - 1:
+                self.timer_is_showing_movements = time.perf_counter()
+                self.mov_showing_seq += 1
+            else:
+                self.is_showing_movements = False
+
+    def show_representation_movement(self):
+        self.img = show_image_movements(
+            img=self.img,
+            command=self.move_representation_seq,
+            color_background=list(self.move_in_colors.values())[self.move_representation_seq - 1],
+        )
+
+        self.img = write_message(
+            self.img,
+            colors.COLOR_NAME.get(
+                self.move_in_colors.get(self.move_representation_seq)
+            ),
+        )
+
+        delta = time.perf_counter() - self.timer_is_showing_movements
+
+        if delta > TIME_SHOW_MOVEMENT_REPRESENTATION:
+            if self.move_representation_seq < len(self.move_in_colors):
+                self.timer_is_showing_movements = time.perf_counter()
+                self.move_representation_seq += 1
+            else:
+                self.timer_is_showing_movements = time.perf_counter()
+                self.is_showed_representation = True
 
     def color_move_representation(self):
         colors = [RED, BLUE, GREEN, YELLOW]
 
-        move_in_colors = {}
+        #sorteando todas as vezes o jogo ficou muito dificil
+        #então manter as cores fixas para cada movimento e utilizar apenas 3
+        self.move_in_colors = {
+            LEFT_HAND: RED,
+            RIGHT_HAND: BLUE,
+            # JUMP: GREEN,
+            # CROUCH: YELLOW,
+        }
 
-        for i in range(1, len(colors)):
-            rand_color = random.choice(colors)
-            move_in_colors[i] = rand_color
-            colors.remove(rand_color)
+        # for mov in MOVEMENTS:
+        #     rand_color = random.choice(colors)
+        #     self.move_in_colors[mov] = rand_color
+        #     colors.remove(rand_color)
 
     def reset_variables_mode(self):
-        self.color_move_representation()
+        self.is_showing_representation = False
+        self.move_representation_seq = 1
+        self.is_showed_representation = False
 
     def start(self, width: int, height: int):
-        Game.Show(width, height, self)
-        
+        self.Show(width, height, self)
+
     @property
     def mode(self) -> int:
         return self._mode
-    
-    @mode.setter
-    def mode(self, value: int):
-        if not isinstance(value, int):
-            raise ValueError("Mode deve ser um inteiro.")
-        self._mode = value
+
+    @property
+    def list_movements(self) -> list[int]:
+        return self._list_movements

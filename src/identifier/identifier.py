@@ -21,7 +21,9 @@ logging.basicConfig(
 
 # classe que identifica os movimentos do usuário
 class Identifier(poses.Poses):
-    def __init__(self):
+    def __init__(self, list_valid_movements:list[int]):
+        
+        #TODO: Liberar apenas os metodos liberados para o tipo de jogo
         self.MOVEMENTS_METHODS = [
             self.hand_left,
             self.hand_right,
@@ -129,10 +131,10 @@ class Identifier(poses.Poses):
 
         return True
         
-    def sort_movements(self, qtd: int = 1):
+    def sort_movements(self, list_movements:list[int], qtd: int = 1):
         self.list_commands = []
-        for i in range(qtd):
-            self.list_commands.append(random.randint(1, len(mov.MOVEMENTS)))
+        for _ in range(qtd):
+            self.list_commands.append(random.choice(list_movements))
 
         self.reset_seq_command()
 
@@ -214,3 +216,9 @@ class Identifier(poses.Poses):
     def next_movement(self):
         self.seq_command += 1
         self.command = self.list_commands[self.seq_command]
+        
+    def list_commands(self, new_list_commands:list):
+        self.list_commands = new_list_commands
+        
+    def list_commands(self)->list:
+        return self.list_commands

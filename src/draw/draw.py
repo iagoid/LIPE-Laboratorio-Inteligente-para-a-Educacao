@@ -87,35 +87,45 @@ def draw_points(img: MatLike, points):
         cv2.circle(img, (cx, cy), 3, colors.RED, cv2.FILLED)  # desenha um círculo
 
 
-def show_image_movements(img: MatLike, command: int, seq: int = None):
-    image_filter = apply_filter(img, colors.BLUE_LIGHT)
+def show_image_movements(img: MatLike, command: int = None, seq: int = None, color_background = colors.BLUE_LIGHT, show_image:bool = True):
+    image = apply_filter(img, color_background)
+    h_background, w_background, _ = image.shape
 
-    img_movement = cv2.imread(
-        "images" + os.sep + mov.MOVEMENTS_IMAGES[command], cv2.IMREAD_UNCHANGED
-    )
-    img_movement = cv2.resize(img_movement, (0, 0), None, 0.5, 0.5)
+    if show_image and command:
+        img_movement = cv2.imread(
+            "images" + os.sep + mov.MOVEMENTS_IMAGES[command], cv2.IMREAD_UNCHANGED
+        )
+        img_movement = cv2.resize(img_movement, (0, 0), None, 0.5, 0.5)
 
-    h_background, w_background, _ = image_filter.shape
-    h_img_mov, w_img_mov, _ = img_movement.shape
+        h_img_mov, w_img_mov, _ = img_movement.shape
 
-    pos_x = (w_background - w_img_mov) // 2
-    pos_y = (h_background - h_img_mov) // 2
-    cvzone.overlayPNG(image_filter, img_movement, [pos_x, pos_y])
+        pos_x = (w_background - w_img_mov) // 2
+        pos_y = (h_background - h_img_mov) // 2
+        cvzone.overlayPNG(image, img_movement, [pos_x, pos_y])
+    
+    pil_image = Image.fromarray(image)
 
-    pil_image = Image.fromarray(image_filter)
-
-    if seq:
+    if command and seq:
         order = f"{seq} - {mov.MOVEMENTS_ORDER[command]}"
-    else:
+    elif seq:
+        order = f"{seq}"
+    elif command:
         order = mov.MOVEMENTS_ORDER[command]
-
+    else:
+        order = ""
+    
     font = ImageFont.truetype(FONT_SUPER_SQUAD_PATH, size=25)
     draw = ImageDraw.Draw(pil_image)
 
     _, _, text_width, text_height = font.getbbox(text=order, stroke_width=1)
 
-    textX = int((w_background - text_width) / 2)
-    textY = int(pos_y + h_img_mov)
+    if show_image and command:
+        textX = int((w_background - text_width) / 2)
+        textY = int(pos_y + h_img_mov)
+    else:
+        textX = int((w_background - text_width) / 2)
+        textY = h_background - text_height - 50
+        
     draw.text(
         (textX, textY), order, font=font, stroke_width=1, stroke_fill=colors.BLACK
     )
@@ -124,7 +134,7 @@ def show_image_movements(img: MatLike, command: int, seq: int = None):
     return image
 
 
-def show_player_image(img: MatLike, seq_player: int = None) -> MatLike | None:
+def show_player_image(img: MatLike, seq_player: int = None, text_color: tuple[int, int, int] = colors.ORANGE) -> MatLike | None:
     dir_img_profile = f"PlayerImages{os.sep}{seq_player}{os.sep}profile.jpg"
     img_profile = cv2.imread(dir_img_profile, cv2.IMREAD_UNCHANGED)
 
@@ -155,14 +165,63 @@ def show_player_image(img: MatLike, seq_player: int = None) -> MatLike | None:
     textX = int((w_background - text_width) / 2)
     textY = int(pos_y + h_img_prof)
     draw.text(
-        (textX, textY), order, font=font, stroke_width=1, stroke_fill=colors.ORANGE
+        (textX, textY), order, font=font, stroke_width=1, stroke_fill=text_color
     )
     image = np.asarray(pil_image)
 
     return image
 
+def show_score(img: MatLike, scoreA: int, scoreB: int) -> MatLike:
+    # Obtém as dimensões da imagem
+    h_background, w_background, _ = img.shape
 
-def show_correct_position(img: MatLike):
+    # Converte para imagem PIL
+    pil_image = Image.fromarray(img)
+
+    # Fonte e estilo
+    font = ImageFont.truetype(FONT_SUPER_SQUAD_PATH, size=55)
+    draw = ImageDraw.Draw(pil_image)
+
+    # Texto para os scores
+    text_scoreA = f"EQUIPE A: {scoreA}"
+    text_scoreB = f"EQUIPE B: {scoreB}"
+
+    # Calcula as posições do texto
+    _, _, text_widthA, text_heightA = font.getbbox(text=text_scoreA, stroke_width=1)
+    _, _, text_widthB, text_heightB = font.getbbox(text=text_scoreB, stroke_width=1)
+
+    # Centraliza horizontalmente e posiciona verticalmente
+    textX_A = int((w_background - text_widthA) / 2)
+    textY_A = 250  # Offset para o score A
+
+    textX_B = int((w_background - text_widthB) / 2)
+    textY_B = textY_A + text_heightA + 100  # Espaçamento entre os textos
+
+    # Desenha os textos
+    draw.text(
+        (textX_A, textY_A),
+        text_scoreA,
+        font=font,
+        stroke_width=1,
+        stroke_fill=colors.RED,
+        fill="white",
+    )
+    draw.text(
+        (textX_B, textY_B),
+        text_scoreB,
+        font=font,
+        stroke_width=1,
+        stroke_fill=colors.BLUE,
+        fill="white",
+    )
+
+    # Converte de volta para o formato NumPy
+    image = np.asarray(pil_image)
+
+    return image
+
+
+def show_correct_position(img: MatLike)->MatLike:
     image_filter = apply_filter(img, colors.GREEN)
 
     img_pos = cv2.imread(

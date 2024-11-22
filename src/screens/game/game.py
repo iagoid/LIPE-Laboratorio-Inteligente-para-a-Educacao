@@ -30,7 +30,8 @@ from src.draw.draw import (
     apply_filter,
     write_message,
     show_correct_position,
-    draw_confetti
+    draw_confetti,
+    show_score
 )
 import random
 from database.students.students import select_students
@@ -51,13 +52,17 @@ class Game:
         self.is_showing_next_round = False
 
         self.number_movements = INITIAL_NUMBER_MOVEMENTS
-        self.player_seq = 0
+        
+        self.score_timeA = 0
+        self.score_timeB = 0
 
         self.confetti_particles: List[Confetti] = []
         self.get_serial_number()
         self.reset_variables()
 
     def reset_variables(self):
+        self.score_player = 0
+        
         self.sort_movement = True
         self.is_showing_movements = False
         self.is_movement_wrong = False
@@ -94,7 +99,7 @@ class Game:
             if not searched_player is None: 
                 print(f"Player Consultado {searched_player}")
                 self.searching_player = False
-                if int(searched_player) == self.expected_player:
+                if int(searched_player) == self.expected_player.Id:
                     print("Iniciando o Jogo")
                     self.player_found = True
 
@@ -107,24 +112,6 @@ class Game:
             self.timer_is_showing_movements = time.perf_counter()
         else:
             self.img = show_correct_position(self.img)
-
-    def show_movement(self):
-        self.img = show_image_movements(
-            self.img,
-            self.my_identifier.command_at(self.mov_showing_seq),
-            self.mov_showing_seq + 1,
-        )
-        
-        self.is_draw_circles = True
-
-        delta = time.perf_counter() - self.timer_is_showing_movements
-
-        if delta > TIME_NEXT_MOVE:
-            if self.mov_showing_seq < self.my_identifier.qtd_movements() - 1:
-                self.timer_is_showing_movements = time.perf_counter()
-                self.mov_showing_seq += 1
-            else:
-                self.is_showing_movements = False
 
     def show_identified_movement(self):
         if self.movement_correct:
@@ -144,24 +131,93 @@ class Game:
                     self.is_movement_wrong = False
                     self.timer_next_mov = time.perf_counter()
                 else:
-                    self.call_next_round()
+                    self.call_next_player(False)
 
-    def call_next_player(self, add_mov: bool = True):
-        self.reset_variables()
+    def call_next_player(self, remove_player: bool = True):
         
-        self.my_identifier.reset_seq_command()
+        if self.expected_player.Team == "A":
+            self.score_timeA += self.score_player
+        else:
+            self.score_timeB += self.score_player
 
         if len(self.list_players) == 0:
             print("Não foram identificados jogadores.")
             self.expected_player = None
         else:
-            self.player_seq += 1
-            if self.player_seq < len(self.list_players):
-                self.expected_player = self.list_players[self.player_seq][0]
+            self.reset_variables()
+            self.game_mode.reset_variables_mode()
+            self.my_identifier.reset_seq_command()
+                
+            self.set_player(self.expected_player.Id, remove_player)
         
         self.is_showing_next_player = True
         self.timer_show_player = time.perf_counter()
+    
+    def set_player(self, previous_player_id:int, remove_previous_player:bool):
+        previous_player_found = False
+        next_player = None
         
+        for p in self.list_players:
+            if previous_player_found:
+                next_player = p
+                break
+                
+            if p.Id == previous_player_id:
+                previous_player_found = True
+        
+        if remove_previous_player: 
+            self.list_players = [p for p in self.list_players if p.Id != previous_player_id]
+        
+        if not self.is_end_game():
+            if not next_player: #chamo o primeiro player novamente
+                self.add_new_movement()
+                next_player = self.list_players[0]
+                
+            if next_player.Movements is None:
+                self.my_identifier.sort_movements(self.game_mode.list_movements, self.number_movements)
+                next_player.Movements = self.my_identifier.list_commands
+            else:
+                self.my_identifier.list_commands = next_player.Movements
+                
+            self.expected_player = next_player
+            
+        else:
+            self.timer_show_score = time.perf_counter()
+        
+    def is_end_game(self)->bool:
+        if len(self.list_players) == 0:
+            return True
+    
+        return False
+        
+    def show_end_score(self):
+        delta = time.perf_counter() - self.timer_show_score
+        if delta < TIME_SHOW_SCORE:
+            self.img = show_score(self.img, self.score_timeA * 5, self.score_timeB * 5)
+        else:
+            self.is_running = False
+            print("Acabou")
+        
+    def add_new_movement(self):
+        self.mov_showing_seq = 0
+        self.num_circles = 0
+        self.my_identifier.reset_seq_command()
+
+        self.number_movements += 1
+        
+        print(self.list_players)
+        for u in self.list_players:
+            u.Movements.append(random.randint(1, len(self.game_mode.list_movements)))
+            self.my_identifier.list_commands = u.Movements
+
+        self.is_movement_wrong = False
+        self.is_movement_identified = False
+        self.sort_movement = True
+
+        self.is_showing_movements = False
+        self.is_draw_circles = False
+        self.movement_correct = False
+    
     def call_next_round(self):
         self.mov_showing_seq = 0
         self.num_circles = 0
@@ -196,7 +252,12 @@ class Game:
             self.confetti_particles.append(confetti)
             
     def show_next_player(self):
-        img_player = show_player_image(self.img, self.expected_player)
+        if self.expected_player.Team == "A":
+            color = colors.RED
+        else:
+            color = colors.BLUE
+        
+        img_player = show_player_image(self.img, self.expected_player.Id, color)
 
         if img_player is None:
             return
@@ -230,22 +291,36 @@ class Game:
 
         self.timer_show_player = time.perf_counter()
 
-        self.my_identifier = identifier.Identifier()
-        self.my_identifier.sort_movements(self.number_movements)
+        self.my_identifier = identifier.Identifier(self.game_mode.list_movements)
+        self.my_identifier.sort_movements(self.game_mode.list_movements, self.number_movements)
         
         self.my_face_recognizer = FaceRecognizer(
             encodings_location=DEFAULT_ENCODINGS_PATH
         )
 
         self.list_players = select_students()
+        
+        team = None
+        for p in self.list_players:
+            if team == "A":
+                team = "B"
+            else:
+                team = "A"
+            
+            p.Team = team     
+            p.Active = True   
 
         self.is_showing_next_player = True
-        self.expected_player = int(self.list_players[self.player_seq][0])
-        print("---> " + str(self.expected_player))
+        self.expected_player = self.list_players[0]
+        self.expected_player.Movements = self.my_identifier.list_commands
+        
+        print("---> " + str(self.expected_player.Id))
+
+        self.is_running = True
 
         with ThreadPoolExecutor(max_workers=4) as self.executor:
 
-            while True:
+            while self.is_running:
                 if video_conf.stopped is True:
                     break
                 else:
@@ -254,18 +329,16 @@ class Game:
                     
                     if self.is_draw_circles:
                         draw_circles(self.img, self.number_movements, self.num_circles, self.is_movement_wrong)
-
+                    
+                        
                     if len(self.confetti_particles) > 0:
                         self.img = draw_confetti(self.img, self.confetti_particles)
                         self.confetti_particles = [particle for particle in self.confetti_particles if particle.PosY < self.img.shape[0]]
                     
-                    # imgRGB = cv2.cvtColor(
-                    #     self.img, cv2.COLOR_BGR2RGB
-                    # )  # converte a cor para RGB (posso também utilizar essa imagem no processamento)
-
-                    # face_detection(img)
-                    # face_mesh(img)
-                    if self.is_showing_next_player:
+                    elif self.is_end_game():
+                        self.show_end_score()
+                    
+                    elif self.is_showing_next_player:
                         self.show_next_player()
                         
                     elif self.is_showing_next_round:
@@ -283,7 +356,7 @@ class Game:
                                 self.player_is_positioned()
 
                             elif self.is_showing_movements:
-                                self.show_movement()
+                                self.game_mode.show_movement()
 
                             elif not self.is_movement_identified and not self.is_movement_wrong:
                                 # Verifico se existe a necessidade de realizar um novo sorteio
@@ -296,22 +369,24 @@ class Game:
                                 if self.movement_correct is None:
                                     pass
                                 elif self.movement_correct:
+                                    self.score_player += 1
                                     self.is_movement_wrong = False
                                     self.is_movement_identified = True
                                     self.timer_next_mov = time.perf_counter()
                                 elif not self.movement_correct:
                                     self.timer_is_movement_wrong = time.perf_counter()
                                     self.is_movement_wrong = True
+                                    print("MOVIMENTO eRRADO: ", self.list_players)
 
                             elif self.is_movement_wrong:
-                                add_score((self.number_movements, self.expected_player))
+                                add_score((self.number_movements, self.expected_player.Id))
                                 delta = (
                                     time.perf_counter() - self.timer_is_movement_wrong
                                 )
                                 if delta < 4:
                                     self.img = apply_filter(self.img, colors.RED)
                                 else:
-                                    self.call_next_player(False)
+                                    self.call_next_player(True)
                             elif self.is_movement_identified:
                                 self.movement_correct = (
                                     self.my_identifier.identify_list_movements(

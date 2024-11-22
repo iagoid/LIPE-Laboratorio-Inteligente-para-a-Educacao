@@ -53,13 +53,19 @@ def select_max_id() -> int:
         return 0
 
 
-def select_students() -> list[object]:
+def select_students() -> list[Player]:
     try:
         with sqlite3.connect(filename) as conn:
             cur = conn.cursor()
-            cur.execute("SELECT id FROM students ORDER BY RANDOM ()")
-            rows = cur.fetchall()
-            return rows
+            cur.execute("SELECT id, age FROM students ORDER BY RANDOM ()")
+            
+            users_list = []
+            
+            for u in cur.fetchall():
+                p = Player(u[0], None, u[1], None, None, True)
+                users_list.append(p)
+                
+            return users_list
     except sqlite3.Error as e:
         print(e)
 
@@ -71,7 +77,7 @@ def main():
 
     select_student()
     select_max_id()
-    print(select_students()[0])
+    print(select_students())
 
 
 if __name__ == "__main__":

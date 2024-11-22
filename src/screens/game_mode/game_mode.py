@@ -93,7 +93,9 @@ class GameMode:
                         #     self.loading = loading.Loading(self.window_surface, self.background)
                         #     self.loading.Show(self.game)
                         pass
-                        
+                    
+                    pygame.event.clear()
+                    
                 self.manager.process_events(event)
 
             self.manager.set_window_resolution(
