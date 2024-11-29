@@ -8,6 +8,8 @@ from src.screens.loading import loading
 from src.screens.game.condition_game import ConditionGame
 from src.screens.game.sequence_game import SequenceGame
 from src.constants.constants import DEVELOP_MODE
+from src.screens.dialog.dialog import DialogScreen
+from src.constants.dialog import *
 
 class GameMode:
     def __init__(self):
@@ -23,6 +25,7 @@ class GameMode:
         )
 
         self.player_screen = players.PlayerScreen()
+        self.dialog_screen = DialogScreen()
 
     def Show(self):
         btn_back = pygame_gui.elements.UIButton(
@@ -52,6 +55,7 @@ class GameMode:
             self.manager,
             anchors={"centerx": "centerx", "centery": "centery"},
         )
+        btn_iteration.disable()
 
         clock = pygame.time.Clock()
         is_running = True
@@ -70,6 +74,7 @@ class GameMode:
                         self.game = SequenceGame()
                         
                         if DEVELOP_MODE:
+                            self.dialog_screen.Show(*pygame.display.get_window_size(), DIALOG_SEQUENCE)
                             self.game.start(*pygame.display.get_window_size())
                         else:
                             self.loading = loading.Loading(self.window_surface, self.background)
@@ -79,6 +84,7 @@ class GameMode:
                         self.game = ConditionGame()
                             
                         if DEVELOP_MODE:
+                            self.dialog_screen.Show(*pygame.display.get_window_size(), DIALOG_CONDITION)
                             self.game.start(*pygame.display.get_window_size())
                         else:
                             self.loading = loading.Loading(self.window_surface, self.background)

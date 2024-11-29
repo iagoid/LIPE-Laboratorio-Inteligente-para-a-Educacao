@@ -10,6 +10,8 @@ from threading import Lock
 import random
 import multiprocessing
 from src.interfaces.game_mode import IGameMode
+from src.constants.game_modes import SEQUENCE, ITERATION, CONDITION
+from src.constants.dialog import DIALOG_SEQUENCE, DIALOG_CONDITION, DIALOG_ITERATION
 
 class Loading:
     def __init__(self, window_surface, background):
@@ -93,6 +95,13 @@ class Loading:
         
         with lock:
             if shared_Loading_Counter.value >= 100:
+                if game_mode.mode == SEQUENCE:
+                    self.dialog_screen.Show(*pygame.display.get_window_size(), DIALOG_SEQUENCE)
+                elif game_mode.mode == CONDITION:
+                    self.dialog_screen.Show(*pygame.display.get_window_size(), DIALOG_CONDITION)
+                elif game_mode.mode == ITERATION:
+                    self.dialog_screen.Show(*pygame.display.get_window_size(), DIALOG_ITERATION)
+                
                 pygame.display.set_mode(flags=pygame.HIDDEN)
                 self.game.Show(*pygame.display.get_window_size(), game_mode)
                 pygame.display.set_mode(flags=pygame.SHOWN)

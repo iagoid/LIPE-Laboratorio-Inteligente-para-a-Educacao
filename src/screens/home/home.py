@@ -3,8 +3,11 @@
 
 import pygame
 import pygame_gui
-from src.screens.players import players
-from src.screens.game_mode import game_mode
+from src.screens.players.players import PlayerScreen
+from src.screens.game_mode.game_mode import GameMode
+from src.screens.dialog.dialog import DialogScreen
+from src.constants.dialog import DIALOG_START_GAME
+from src.globals import variables
 
 class HomeScreen:
     def __init__(self):
@@ -19,7 +22,8 @@ class HomeScreen:
             "src/styles/style.json",
         )
 
-        self.player_screen = players.PlayerScreen()
+        self.player_screen = PlayerScreen()
+        self.dialog_screen = DialogScreen()
 
     def Show(self):
 
@@ -61,7 +65,10 @@ class HomeScreen:
                         is_running = False
 
                     elif event.ui_element == btn_play:
-                        self.game_mode = game_mode.GameMode()
+                        if not variables.Initial_Game_Dialog_Showed:
+                            self.dialog_screen.Show(1920, 1080, DIALOG_START_GAME)
+                            variables.Initial_Game_Dialog_Showed = True
+                        self.game_mode = GameMode()
                         self.game_mode.Show()
 
                     elif event.ui_element == btn_players:
