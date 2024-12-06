@@ -64,7 +64,23 @@ DIALOG_SEQUENCE = [
 
 DIALOG_CONDITION = [
     Dialog(
-        Text="TEXTO DA CONDIÇÃO!",
+        Text=f"Imagine que você está brincando e alguém te pergunta: 'Está chovendo lá fora?'. Se estiver chovendo, você responde 'Sim', e talvez decida ficar em casa. Se não estiver chovendo, você diz 'Não' e pode sair para brincar. Isso é uma condição! É como uma pergunta que ajuda a escolher o que fazer.",
+        Character_Dir="images" + os.sep + "robot" + os.sep + "lipe.png",
+    ),
+    Dialog(
+        Text=f"Agora, imagine que o computador também precisa tomar decisões. Ele faz perguntas como: 'O botão foi pressionado?' ou 'O número é maior que 10?'. Dependendo da resposta, ele faz uma coisa ou outra. É assim que ele decide o que fazer!",
+        Character_Dir="images" + os.sep + "robot" + os.sep + "lipe.png",
+    ),
+    Dialog(
+        Text="Por exemplo, vamos brincar de computador. Eu pergunto: 'Você está com fome?'",
+        Character_Dir="images" + os.sep + "robot" + os.sep + "lipe.png",
+    ),
+    Dialog(
+        Text=f"Se você responder 'Sim', eu te dou um lanchinho. Se você responder 'Não', a gente continua brincando.",
+        Character_Dir="images" + os.sep + "robot" + os.sep + "lipe.png",
+    ),
+    Dialog(
+        Text=f"Essa pergunta é a condição, e o que a gente faz depois depende da sua resposta.",
         Character_Dir="images" + os.sep + "robot" + os.sep + "lipe.png",
     ),
 ]

@@ -252,7 +252,7 @@ class PlayerScreen:
                     self.msg_in_screen = "SALVANDO IMAGENS..."
 
                 elif self.all_images_recorded and self.is_enabled_save_user:
-                    self.player = Player(self.player_id, self.name, self.age)
+                    self.player = Player(self.player_id, self.name, self.age, "", [], True)
                     self.SavePlayer()
                     self.player = None
 

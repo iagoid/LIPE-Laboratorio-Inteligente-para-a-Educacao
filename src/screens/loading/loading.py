@@ -12,6 +12,7 @@ import multiprocessing
 from src.interfaces.game_mode import IGameMode
 from src.constants.game_modes import SEQUENCE, ITERATION, CONDITION
 from src.constants.dialog import DIALOG_SEQUENCE, DIALOG_CONDITION, DIALOG_ITERATION
+from src.screens.dialog.dialog import DialogScreen
 
 class Loading:
     def __init__(self, window_surface, background):
@@ -60,6 +61,8 @@ class Loading:
         )
 
         clock = pygame.time.Clock()
+        self.dialog_screen = DialogScreen()
+        
         manager = multiprocessing.Manager()
         shared_Loading_Counter = manager.Value('i', 0)  # 'i' is the typecode for integers
         lock = manager.Lock()

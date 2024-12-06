@@ -38,6 +38,8 @@ class DialogScreen:
         screen = pygame.display.set_mode((width, height), pygame.FULLSCREEN)
         clock = pygame.time.Clock()
         
+        self.reset_variables()
+        
         while is_running:
             character_image_path = dialogs[self.seq_dialog].Character_Dir
             if not os.path.exists(character_image_path):
