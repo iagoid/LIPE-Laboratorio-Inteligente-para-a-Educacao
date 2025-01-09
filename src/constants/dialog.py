@@ -57,14 +57,18 @@ DIALOG_SEQUENCE = [
         Character_Dir="images" + os.sep + "robot" + os.sep + "lipe.png",
     ),
     Dialog(
-        Text="Pronto pra praticar? Monte seu plano e faça o robô completar a missão!",
+        Text="Pronto pra praticar? Primeiro serão mostrados em tela os movimentos a serem realizados",
+        Character_Dir="images" + os.sep + "robot" + os.sep + "lipe.png",
+    ),
+    Dialog(
+        Text="Memorize os movimentos e depois repitá-os na ordem que eles apareceram. Vamos lá!",
         Character_Dir="images" + os.sep + "robot" + os.sep + "lipe.png",
     ),
 ]
 
 DIALOG_CONDITION = [
     Dialog(
-        Text=f"Imagine que você está brincando e alguém te pergunta: 'Está chovendo lá fora?'. Se estiver chovendo, você responde 'Sim', e talvez decida ficar em casa. Se não estiver chovendo, você diz 'Não' e pode sair para brincar. Isso é uma condição! É como uma pergunta que ajuda a escolher o que fazer.",
+        Text=f"Imagine que você está brincando e alguém te pergunta: 'Está chovendo lá fora?'. Se estiver chovendo, você responde 'Sim', e fica em casa. Se não estiver chovendo, você diz 'Não' e sai para brincar. Isso é uma condição! É como uma pergunta que ajuda a escolher o que fazer.",
         Character_Dir="images" + os.sep + "robot" + os.sep + "lipe.png",
     ),
     Dialog(
@@ -81,6 +85,18 @@ DIALOG_CONDITION = [
     ),
     Dialog(
         Text=f"Essa pergunta é a condição, e o que a gente faz depois depende da sua resposta.",
+        Character_Dir="images" + os.sep + "robot" + os.sep + "lipe.png",
+    ),
+        Dialog(
+        Text="Pronto pra praticar? Nesse jogo os movimentos são representados por cores. Primeiramente serão mostradas qual movimento cada cor representa.",
+        Character_Dir="images" + os.sep + "robot" + os.sep + "lipe.png",
+    ),
+        Dialog(
+        Text="Primeiro serão mostrados em tela a sequencia de cores.",
+        Character_Dir="images" + os.sep + "robot" + os.sep + "lipe.png",
+    ),
+    Dialog(
+        Text="Memorize as cores e depois realize os movimentos que elas representam na ordem correta. Vamos lá!",
         Character_Dir="images" + os.sep + "robot" + os.sep + "lipe.png",
     ),
 ]

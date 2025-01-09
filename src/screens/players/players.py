@@ -12,7 +12,7 @@ from src.face_recognition.face_detect import (
     face_detection_model,
 )
 from random import *
-from src.draw.draw import write_message, draw_text_top_right
+from src.draw.draw import write_message, draw_text_top_right, draw_message
 from src.speaker import speaker
 from src.utils.utils import string_from_numbers, number_in_words_2_numeric
 import time
@@ -25,12 +25,16 @@ from database.students.students import select_max_id, add_student
 from src.utils.dir import delete_files_in_directory
 from src.datatypes.player import Player
 from src.utils.like_detector import detect_hand_like
+from src.globals import variables
 
 screen_name = "Identificador de Movimentos"
 
 
 class PlayerScreen:
     def __init__(self) -> None:
+        self.btn_position = (0, 0)
+        self.btn_size = (120, 50)
+        
         self.player: Player
         self.lock = Lock()
         self.my_event = Event()
@@ -57,6 +61,8 @@ class PlayerScreen:
         self.next_player = False
 
         self.is_enabled_save_user = False
+        
+        self.button_clicked = False
 
     def add_number_id(self):
         self.serial_id += 1
@@ -87,7 +93,7 @@ class PlayerScreen:
         with open(dir_txt_age, "w") as f:
             f.write(self.name)
 
-        speaker.SpeakText(self.name[:50])
+        speaker.SpeakText("Seja bem-vindo!")
 
         with self.lock:
             self.request_name_complete = True
@@ -132,6 +138,7 @@ class PlayerScreen:
         self.player_id = last_id + 1
 
     def SavePlayer(self):
+        variables.Is_Traninig_Realized = False
         add_student(self.player)
 
     def create_directory(self):
@@ -180,6 +187,11 @@ class PlayerScreen:
                 self.is_saving_images = False
 
             schedule.cancel_job(self.schSaveImg)
+            
+    def mouse_callback(self, event, x, y, flags, param):
+        if event == cv2.EVENT_LBUTTONDOWN:
+            if self.btn_position[0] <= x <= self.btn_size[0] and self.btn_position[1] <= y <= self.btn_size[1]:
+                self.button_clicked = True
 
     def Show(self, width: int, height: int):
         video_conf = VideoConfig(screen_name, width=width, height=height)
@@ -187,6 +199,10 @@ class PlayerScreen:
 
         thread_req_name = None
         thread_req_age = None
+        
+        self.reset_variables()
+        
+        cv2.setMouseCallback(screen_name, self.mouse_callback)
 
         while True:
             if video_conf.stopped is True:
@@ -202,6 +218,8 @@ class PlayerScreen:
                     self.img = write_message(self.img, self.msg_in_screen)
 
                 if self.awaiting_new_player:
+                    self.img = draw_message(self.img, "CONCLUIR", self.btn_position, self.btn_size)
+
                     self.msg_in_screen = "DÊ UM LIKE QUANDO ESTIVER PRONTO"
                     if detect_hand_like(self.real_image):
                         self.new_request_name = True
@@ -273,9 +291,8 @@ class PlayerScreen:
 
             cv2.imshow(screen_name, self.img)  # exibe a imagem com os pontos na tela
 
-            # verifica que teclas foram apertadas
             tecla = cv2.waitKey(33)  # espera em milisegundos da execução das imagens
-            if tecla == 27:  # verifica se foi a tecla esc
+            if tecla == 27 or self.button_clicked:
                 self.my_event.set()
                 break
 

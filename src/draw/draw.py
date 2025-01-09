@@ -67,6 +67,27 @@ def draw_message(img: MatLike, message: str):
     draw.text((15, 5), message, font=font, stroke_width=1, stroke_fill=colors.BLACK)
     return np.asarray(pil_image)
 
+def draw_message(img: MatLike, message: str, position: tuple[int, int], size: tuple[int, int]) -> MatLike:
+    x, y = position
+    width, height = size
+    
+    img_copy = np.copy(img)
+
+    cv2.rectangle(img_copy, (x, y), (x + width, y + height), colors.ORANGE, -1)
+
+    pil_image = Image.fromarray(img_copy)
+
+    font = ImageFont.truetype(FONT_SUPER_SQUAD_PATH, size=18)
+    draw = ImageDraw.Draw(pil_image)
+    
+    _, _, text_width, text_height = font.getbbox(text=message, stroke_width=1)
+    text_x = x + (width - text_width) // 2
+    text_y = y + (height - text_height) // 2
+
+
+    draw.text((text_x, text_y), message, font=font, stroke_width=1, stroke_fill=colors.BLACK)
+    return np.asarray(pil_image)
+
 
 def draw_points(img: MatLike, points):
     # um laço de repetição para percorrer todos os pontos e desenhar um círculo e o número do ponto

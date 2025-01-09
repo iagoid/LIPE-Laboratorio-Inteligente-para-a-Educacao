@@ -10,6 +10,7 @@ from src.screens.game.sequence_game import SequenceGame
 from src.constants.constants import DEVELOP_MODE
 from src.screens.dialog.dialog import DialogScreen
 from src.constants.dialog import *
+from src.globals import variables
 
 class GameMode:
     def __init__(self):
@@ -73,31 +74,31 @@ class GameMode:
                     elif event.ui_element == btn_sequence:
                         self.game = SequenceGame()
                         
-                        if DEVELOP_MODE:
-                            self.dialog_screen.Show(*pygame.display.get_window_size(), DIALOG_SEQUENCE)
-                            self.game.start(*pygame.display.get_window_size())
-                        else:
+                        if not DEVELOP_MODE and not variables.Is_Traninig_Realized:
                             self.loading = loading.Loading(self.window_surface, self.background)
                             self.loading.Show(self.game)
+                        else:
+                            self.dialog_screen.Show(*pygame.display.get_window_size(), DIALOG_SEQUENCE)
+                            self.game.start(*pygame.display.get_window_size())
 
                     elif event.ui_element == btn_condition:
                         self.game = ConditionGame()
                             
-                        if DEVELOP_MODE:
-                            self.dialog_screen.Show(*pygame.display.get_window_size(), DIALOG_CONDITION)
-                            self.game.start(*pygame.display.get_window_size())
-                        else:
+                        if not DEVELOP_MODE and not variables.Is_Traninig_Realized:
                             self.loading = loading.Loading(self.window_surface, self.background)
                             self.loading.Show(self.game)
+                        else:
+                            self.dialog_screen.Show(*pygame.display.get_window_size(), DIALOG_CONDITION)
+                            self.game.start(*pygame.display.get_window_size())
                         
                     elif event.ui_element == btn_iteration:
                         # self.game = IterationGame()
-                        # if DEVELOP_MODE:
-                        #     self.game.start(*pygame.display.get_window_size())
-                        #     pass
-                        # else:
+                        # if not DEVELOP_MODE and not variables.Is_Traninig_Realized:
                         #     self.loading = loading.Loading(self.window_surface, self.background)
                         #     self.loading.Show(self.game)
+                        # else:
+                        #     self.game.start(*pygame.display.get_window_size())
+                        #     pass
                         pass
                     
                     pygame.event.clear()

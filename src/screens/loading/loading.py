@@ -5,7 +5,7 @@ import pygame
 import pygame_gui
 from src.screens.game import game
 from src.face_recognition.model_recognition import encode_known_faces
-from src.globals.variables import Loading_Counter
+from src.globals import variables
 from threading import Lock
 import random
 import multiprocessing
@@ -27,7 +27,6 @@ class Loading:
         self.game = game.Game()
 
     def Show(self, game_mode:IGameMode):
-        global Loading_Counter
         loading_phrases = [
             "Segure firme! Ação intensa a caminho!",
             "Carregando conhecimento... fique atento!",
@@ -98,6 +97,8 @@ class Loading:
         
         with lock:
             if shared_Loading_Counter.value >= 100:
+                variables.Is_Traninig_Realized = True
+                
                 if game_mode.mode == SEQUENCE:
                     self.dialog_screen.Show(*pygame.display.get_window_size(), DIALOG_SEQUENCE)
                 elif game_mode.mode == CONDITION:
