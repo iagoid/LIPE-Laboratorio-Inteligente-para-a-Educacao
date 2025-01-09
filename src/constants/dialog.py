@@ -92,7 +92,7 @@ DIALOG_CONDITION = [
         Character_Dir="images" + os.sep + "robot" + os.sep + "lipe.png",
     ),
         Dialog(
-        Text="Primeiro serão mostrados em tela a sequencia de cores.",
+        Text="Depois serão mostrados em tela a sequencia de cores.",
         Character_Dir="images" + os.sep + "robot" + os.sep + "lipe.png",
     ),
     Dialog(

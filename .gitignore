@@ -9,3 +9,4 @@ Captures
 *.db
 *.log
 serial_id.txt
+*.pkl

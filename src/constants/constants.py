@@ -1,6 +1,6 @@
 import os
 
-DEVELOP_MODE = True
+DEVELOP_MODE = False
 NUM_IMAGES_USE_TRAINING = 5
 
 HARCASCADEPATH = "models" + os.sep + "haarcascade_frontalface_default.xml"

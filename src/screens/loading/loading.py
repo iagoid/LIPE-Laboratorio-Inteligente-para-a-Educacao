@@ -9,10 +9,6 @@ from src.globals import variables
 from threading import Lock
 import random
 import multiprocessing
-from src.interfaces.game_mode import IGameMode
-from src.constants.game_modes import SEQUENCE, ITERATION, CONDITION
-from src.constants.dialog import DIALOG_SEQUENCE, DIALOG_CONDITION, DIALOG_ITERATION
-from src.screens.dialog.dialog import DialogScreen
 
 class Loading:
     def __init__(self, window_surface, background):
@@ -24,9 +20,8 @@ class Loading:
         )
         
         self.lock = Lock()
-        self.game = game.Game()
 
-    def Show(self, game_mode:IGameMode):
+    def Show(self):
         loading_phrases = [
             "Segure firme! Ação intensa a caminho!",
             "Carregando conhecimento... fique atento!",
@@ -60,7 +55,6 @@ class Loading:
         )
 
         clock = pygame.time.Clock()
-        self.dialog_screen = DialogScreen()
         
         manager = multiprocessing.Manager()
         shared_Loading_Counter = manager.Value('i', 0)  # 'i' is the typecode for integers
@@ -98,17 +92,6 @@ class Loading:
         with lock:
             if shared_Loading_Counter.value >= 100:
                 variables.Is_Traninig_Realized = True
-                
-                if game_mode.mode == SEQUENCE:
-                    self.dialog_screen.Show(*pygame.display.get_window_size(), DIALOG_SEQUENCE)
-                elif game_mode.mode == CONDITION:
-                    self.dialog_screen.Show(*pygame.display.get_window_size(), DIALOG_CONDITION)
-                elif game_mode.mode == ITERATION:
-                    self.dialog_screen.Show(*pygame.display.get_window_size(), DIALOG_ITERATION)
-                
-                pygame.display.set_mode(flags=pygame.HIDDEN)
-                self.game.Show(*pygame.display.get_window_size(), game_mode)
-                pygame.display.set_mode(flags=pygame.SHOWN)
             else:
                 proc.terminate()
             

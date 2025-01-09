@@ -12,7 +12,7 @@ from src.face_recognition.face_detect import (
     face_detection_model,
 )
 from random import *
-from src.draw.draw import write_message, draw_text_top_right, draw_message
+from src.draw.draw import write_message, draw_text_top_right, draw_message_position
 from src.speaker import speaker
 from src.utils.utils import string_from_numbers, number_in_words_2_numeric
 import time
@@ -218,7 +218,7 @@ class PlayerScreen:
                     self.img = write_message(self.img, self.msg_in_screen)
 
                 if self.awaiting_new_player:
-                    self.img = draw_message(self.img, "CONCLUIR", self.btn_position, self.btn_size)
+                    self.img = draw_message_position(self.img, "CONCLUIR", self.btn_position, self.btn_size)
 
                     self.msg_in_screen = "DÊ UM LIKE QUANDO ESTIVER PRONTO"
                     if detect_hand_like(self.real_image):

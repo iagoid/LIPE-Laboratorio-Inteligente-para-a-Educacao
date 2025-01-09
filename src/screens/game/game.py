@@ -73,6 +73,8 @@ class Game:
         self.mov_showing_seq = 0
         self.num_circles = 0
         
+        self.num_attempts_find_player = 0
+        
     def add_number_id(self):
         self.serial_id += 1
         with open("serial_id.txt", "w") as f:
@@ -92,17 +94,20 @@ class Game:
                 self.my_face_recognizer.recognize_faces, self.real_image
             )
             self.searching_player = True
+            self.timer_search_player = time.perf_counter()
 
         elif self.fut_player_search.done():
             searched_player = self.fut_player_search.result()
-            
+        
             if not searched_player is None: 
                 print(f"Player Consultado {searched_player}")
                 self.searching_player = False
-                if int(searched_player) == self.expected_player.Id:
+                if int(searched_player) == self.expected_player.Id or self.num_attempts_find_player > 10:
                     print("Iniciando o Jogo")
                     self.player_found = True
-
+                else:
+                    self.num_attempts_find_player += 1
+                    
     def player_is_positioned(self):
         self.my_identifier.process_image(self.real_image)
 
@@ -344,15 +349,15 @@ class Game:
                     elif self.is_showing_next_round:
                         self.show_message_new_round()
 
-                    elif not self.player_found:
-                        self.find_expected_player()
-
                     else:
                         self.my_identifier.process_image(self.real_image)
                         # draw_points(self.img, self.my_identifier.points)
 
                         if self.my_identifier.points:
-                            if self.sort_movement:
+                            if not self.player_found:
+                                self.find_expected_player()
+                                
+                            elif self.sort_movement:
                                 self.player_is_positioned()
 
                             elif self.is_showing_movements:
@@ -376,7 +381,7 @@ class Game:
                                 elif not self.movement_correct:
                                     self.timer_is_movement_wrong = time.perf_counter()
                                     self.is_movement_wrong = True
-                                    print("MOVIMENTO eRRADO: ", self.list_players)
+                                    print("MOVIMENTO ERRADO: ", self.list_players)
 
                             elif self.is_movement_wrong:
                                 add_score((self.number_movements, self.expected_player.Id))

@@ -67,7 +67,7 @@ def draw_message(img: MatLike, message: str):
     draw.text((15, 5), message, font=font, stroke_width=1, stroke_fill=colors.BLACK)
     return np.asarray(pil_image)
 
-def draw_message(img: MatLike, message: str, position: tuple[int, int], size: tuple[int, int]) -> MatLike:
+def draw_message_position(img: MatLike, message: str, position: tuple[int, int], size: tuple[int, int]) -> MatLike:
     x, y = position
     width, height = size
     
