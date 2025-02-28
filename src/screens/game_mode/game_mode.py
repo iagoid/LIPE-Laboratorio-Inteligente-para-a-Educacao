@@ -14,8 +14,6 @@ from src.globals import variables
 
 class GameMode:
     def __init__(self):
-        pygame.init()
-        pygame.display.set_caption("LIFE: Lab of Artificial Inteligence for Education")
         self.window_surface = pygame.display.set_mode((1920, 1080), pygame.FULLSCREEN)
         
         self.background = pygame.image.load("images/background.jpg")
@@ -30,7 +28,7 @@ class GameMode:
 
     def Show(self):
         btn_back = pygame_gui.elements.UIButton(
-            pygame.Rect(5, 5, 150, 50),
+            pygame.Rect(5, 5, 200, 50),
             "VOLTAR",
             self.manager,
             anchors={"left": "left", "top": "top"},

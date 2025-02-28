@@ -10,6 +10,7 @@ from src.datatypes.dialog import Dialog
 from src.constants.colors import *
 from src.draw.dialog import *
 from src.image.image import load_and_resize_png
+import cv2
 
 screen_name = "Identificador de Movimentos"
 
@@ -21,9 +22,6 @@ class DialogScreen:
         self.seq_dialog = 0
             
     def Show(self, width: int, height, dialogs:list[Dialog]):
-        pygame.init()
-        pygame.display.set_caption("LIFE: Lab of Artificial Inteligence for Education")
-        
         background_image = cv2.imread("images/park_background.jpg")
         background_image = cv2.blur(background_image, (15, 15))
         background_image = cv2.cvtColor(background_image, cv2.COLOR_BGR2RGB)
@@ -62,6 +60,13 @@ class DialogScreen:
             screen.blit(self.background, (0, 0))
             screen.blit(character_image, (0, 0))
             character_speak(screen, character_dialog)
+            
+            if not character_dialog.Animations is None:
+                for animation in character_dialog.Animations:
+                    animation.AnimateObj.animate(screen, animation.Position, animation.Scale)
+                    animation.AnimateObj.increment_frame()
 
-            pygame.display.flip()
-            clock.tick(30)
+
+            pygame.display.update()
+
+            clock.tick(5)

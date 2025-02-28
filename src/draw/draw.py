@@ -9,7 +9,7 @@ import src.constants.colors as colors
 from cv2.typing import MatLike
 import cvzone
 import src.constants.movements as mov
-from src.constants.fonts import PRIMARY_FONT, SECONDARY_FONT, FONT_SUPER_SQUAD_PATH
+from src.constants.fonts import PRIMARY_FONT, SECONDARY_FONT, FONT_ARIAL_PATH
 import os
 from src.datatypes.confetti import Confetti
 from typing import List
@@ -61,7 +61,7 @@ def draw_message(img: MatLike, message: str):
 
     pil_image = Image.fromarray(img)
 
-    font = ImageFont.truetype(FONT_SUPER_SQUAD_PATH, size=15)
+    font = ImageFont.truetype(FONT_ARIAL_PATH, size=15)
     draw = ImageDraw.Draw(pil_image)
 
     draw.text((15, 5), message, font=font, stroke_width=1, stroke_fill=colors.BLACK)
@@ -77,7 +77,7 @@ def draw_message_position(img: MatLike, message: str, position: tuple[int, int],
 
     pil_image = Image.fromarray(img_copy)
 
-    font = ImageFont.truetype(FONT_SUPER_SQUAD_PATH, size=18)
+    font = ImageFont.truetype(FONT_ARIAL_PATH, size=18)
     draw = ImageDraw.Draw(pil_image)
     
     _, _, text_width, text_height = font.getbbox(text=message, stroke_width=1)
@@ -135,7 +135,7 @@ def show_image_movements(img: MatLike, command: int = None, seq: int = None, col
     else:
         order = ""
     
-    font = ImageFont.truetype(FONT_SUPER_SQUAD_PATH, size=25)
+    font = ImageFont.truetype(FONT_ARIAL_PATH, size=25)
     draw = ImageDraw.Draw(pil_image)
 
     _, _, text_width, text_height = font.getbbox(text=order, stroke_width=1)
@@ -178,7 +178,7 @@ def show_player_image(img: MatLike, seq_player: int = None, text_color: tuple[in
 
     order = "Próximo Jogador"
 
-    font = ImageFont.truetype(FONT_SUPER_SQUAD_PATH, size=35)
+    font = ImageFont.truetype(FONT_ARIAL_PATH, size=35)
     draw = ImageDraw.Draw(pil_image)
 
     _, _, text_width, text_height = font.getbbox(text=order, stroke_width=1)
@@ -200,7 +200,7 @@ def show_score(img: MatLike, scoreA: int, scoreB: int) -> MatLike:
     pil_image = Image.fromarray(img)
 
     # Fonte e estilo
-    font = ImageFont.truetype(FONT_SUPER_SQUAD_PATH, size=55)
+    font = ImageFont.truetype(FONT_ARIAL_PATH, size=55)
     draw = ImageDraw.Draw(pil_image)
 
     # Texto para os scores
@@ -260,7 +260,7 @@ def show_correct_position(img: MatLike)->MatLike:
 
     order = "SE POSICIONE CORRETAMENTE"
 
-    font = ImageFont.truetype(FONT_SUPER_SQUAD_PATH, size=20)
+    font = ImageFont.truetype(FONT_ARIAL_PATH, size=20)
     draw = ImageDraw.Draw(pil_image)
 
     _, _, text_width, text_height = font.getbbox(text=order, stroke_width=1)
@@ -304,7 +304,7 @@ def draw_message_center_screen(img: MatLike, text: str) -> MatLike:
     pil_image = Image.fromarray(img)
 
     # Draw non-ascii text onto image
-    font = ImageFont.truetype(FONT_SUPER_SQUAD_PATH, size=40)
+    font = ImageFont.truetype(FONT_ARIAL_PATH, size=40)
     draw = ImageDraw.Draw(pil_image)
 
     _, _, text_width, text_height = font.getbbox(text=text, stroke_width=1)
@@ -322,7 +322,7 @@ def write_message(img: MatLike, message: str) -> MatLike:
     pil_image = Image.fromarray(img)
 
     # Draw non-ascii text onto image
-    font = ImageFont.truetype(FONT_SUPER_SQUAD_PATH, size=40)
+    font = ImageFont.truetype(FONT_ARIAL_PATH, size=40)
     draw = ImageDraw.Draw(pil_image)
 
     _, _, text_width, text_height = font.getbbox(text=message, stroke_width=1)
@@ -417,7 +417,7 @@ def draw_text_top_right(img: MatLike, order: str) ->MatLike:
 
     img_height, img_width, _ = img.shape
 
-    font = ImageFont.truetype(FONT_SUPER_SQUAD_PATH, size=20)
+    font = ImageFont.truetype(FONT_ARIAL_PATH, size=20)
 
     _, _, text_width, text_height = font.getbbox(text=order, stroke_width=1)
 

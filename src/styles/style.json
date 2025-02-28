@@ -24,10 +24,10 @@
         },
         "font": {
             "name": "super_squad",
-            "size": "30",
+            "size": "40",
             "bold": "1",
             "italic": "0",
-            "regular_path": "src/screens/fonts/Super Squad.ttf"
+            "regular_path": "src/fonts/Arial.ttf"
         }
     },
     "progress_bar": {
@@ -40,10 +40,10 @@
         },
         "font": {
             "name": "super_squad",
-            "size": "30",
+            "size": "40",
             "bold": "1",
             "italic": "0",
-            "regular_path": "src/screens/fonts/Super Squad.ttf"
+            "regular_path": "src/fonts/Arial.ttf"
         }
     },
     "label": {
@@ -52,7 +52,7 @@
             "size": "18",
             "bold": "",
             "italic": "0",
-            "regular_path": "src/screens/fonts/Super Squad.ttf"
+            "regular_path": "src/fonts/Arial.ttf"
         }
     }
 }
