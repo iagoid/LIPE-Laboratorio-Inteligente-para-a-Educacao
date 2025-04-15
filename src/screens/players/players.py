@@ -279,9 +279,9 @@ class PlayerScreen:
                     self.all_images_recorded = False
 
                 elif self.next_player:
-                    if not self.msg_in_screen == "PRÓXIMO JOGADOR":
-                        self.msg_in_screen = "PRÓXIMO JOGADOR"
-                        speaker.SpeakText(self.msg_in_screen)
+                    # if not self.msg_in_screen == "PRÓXIMO JOGADOR":
+                    #     self.msg_in_screen = "PRÓXIMO JOGADOR"
+                    #     speaker.SpeakText(self.msg_in_screen)
                     delta = time.perf_counter() - self.timer_is_showing_next_player
 
                     if delta > TIME_SHOW_PLAYER:

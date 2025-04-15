@@ -47,8 +47,13 @@ class FaceRecognizer:
                 if not name:
                     name = 0
                 return name
-        except:
-            return ""
+            
+            return 0
+        
+        except Exception as e:
+            print(f"[ERROR] recognize_faces failed: {e}")
+            return 0
+        
 
     def _recognize_face(self, unknown_encoding):
         """

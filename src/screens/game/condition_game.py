@@ -11,6 +11,7 @@ from src.draw.draw import (
     show_image_movements,
     apply_filter,
     write_message,
+    draw_message_center_screen,
 )
 import time
 from src.constants.constants import *
@@ -33,6 +34,10 @@ class ConditionGame(IGameMode, Game):
         if not self.is_showed_representation:
             self.show_representation_movement()
             return
+        
+        if self.is_showing_repeat_msg:
+            self.show_repeat_msg()
+            return
 
         self.img = show_image_movements(
             img=self.img,
@@ -40,7 +45,6 @@ class ConditionGame(IGameMode, Game):
             color_background=self.move_in_colors.get(self.my_identifier.list_commands[self.mov_showing_seq]),
             show_image=False
         )
-        self.is_draw_circles = True
 
         delta = time.perf_counter() - self.timer_is_showing_movements
 
@@ -49,7 +53,8 @@ class ConditionGame(IGameMode, Game):
                 self.timer_is_showing_movements = time.perf_counter()
                 self.mov_showing_seq += 1
             else:
-                self.is_showing_movements = False
+                self.is_showing_repeat_msg = True
+                self.timer_repeat_msg = time.perf_counter()
 
     def show_representation_movement(self):
         self.img = show_image_movements(
@@ -74,7 +79,17 @@ class ConditionGame(IGameMode, Game):
             else:
                 self.timer_is_showing_movements = time.perf_counter()
                 self.is_showed_representation = True
+    
+    def show_repeat_msg(self):
+        delta = time.perf_counter() - self.timer_repeat_msg
 
+        if delta < TIME_SHOW_REPEAT_MESSAGE:
+            self.img = draw_message_center_screen(self.img, "Repita os movimentos")
+        else:
+            # para de mostrar o movimento na tela
+            self.is_showing_movements = False
+            self.is_draw_circles = True
+            
     def color_move_representation(self):
         colors = [RED, BLUE, GREEN, YELLOW]
 
@@ -96,6 +111,8 @@ class ConditionGame(IGameMode, Game):
         self.is_showing_representation = False
         self.move_representation_seq = 1
         self.is_showed_representation = False
+        self.is_showing_repeat_msg = False
+        self.timer_repeat_msg = 0
 
     def start(self, width: int, height: int):
         self.Show(width, height, self)

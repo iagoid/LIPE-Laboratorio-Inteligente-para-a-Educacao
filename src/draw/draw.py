@@ -4,7 +4,6 @@
 import cv2
 import numpy as np
 from PIL import Image, ImageFont, ImageDraw
-import matplotlib.image as mpimg
 import src.constants.colors as colors
 from cv2.typing import MatLike
 import cvzone
@@ -155,7 +154,7 @@ def show_image_movements(img: MatLike, command: int = None, seq: int = None, col
     return image
 
 
-def show_player_image(img: MatLike, seq_player: int = None, text_color: tuple[int, int, int] = colors.ORANGE) -> MatLike | None:
+def show_player_image(img: MatLike, seq_player: int = None, text_color: tuple[int, int, int] = colors.ORANGE, order:str = "") -> MatLike | None:
     dir_img_profile = f"PlayerImages{os.sep}{seq_player}{os.sep}profile.jpg"
     img_profile = cv2.imread(dir_img_profile, cv2.IMREAD_UNCHANGED)
 
@@ -176,18 +175,18 @@ def show_player_image(img: MatLike, seq_player: int = None, text_color: tuple[in
 
     pil_image = Image.fromarray(img)
 
-    order = "Próximo Jogador"
+    if len(order) > 0:
+        font = ImageFont.truetype(FONT_ARIAL_PATH, size=35)
+        draw = ImageDraw.Draw(pil_image)
 
-    font = ImageFont.truetype(FONT_ARIAL_PATH, size=35)
-    draw = ImageDraw.Draw(pil_image)
+        _, _, text_width, text_height = font.getbbox(text=order, stroke_width=1)
 
-    _, _, text_width, text_height = font.getbbox(text=order, stroke_width=1)
-
-    textX = int((w_background - text_width) / 2)
-    textY = int(pos_y + h_img_prof)
-    draw.text(
-        (textX, textY), order, font=font, stroke_width=1, stroke_fill=text_color
-    )
+        textX = int((w_background - text_width) / 2)
+        textY = int(pos_y + h_img_prof)
+        draw.text(
+            (textX, textY), order, font=font, stroke_width=1, stroke_fill=text_color
+        )
+        
     image = np.asarray(pil_image)
 
     return image
@@ -204,8 +203,8 @@ def show_score(img: MatLike, scoreA: int, scoreB: int) -> MatLike:
     draw = ImageDraw.Draw(pil_image)
 
     # Texto para os scores
-    text_scoreA = f"EQUIPE A: {scoreA}"
-    text_scoreB = f"EQUIPE B: {scoreB}"
+    text_scoreA = f"TIME VERMELHO: {scoreA}"
+    text_scoreB = f"TIME AZUL: {scoreB}"
 
     # Calcula as posições do texto
     _, _, text_widthA, text_heightA = font.getbbox(text=text_scoreA, stroke_width=1)
@@ -298,19 +297,18 @@ def draw_face_positioning(img: MatLike) -> MatLike:
     return cv2.bitwise_and(img, img, mask=mask)
 
 
-def draw_message_center_screen(img: MatLike, text: str) -> MatLike:
+def draw_message_center_screen(img: MatLike, text: str, color:tuple[3] = colors.BLACK) -> MatLike:
     img_height, img_width, _ = img.shape
 
     pil_image = Image.fromarray(img)
 
-    # Draw non-ascii text onto image
-    font = ImageFont.truetype(FONT_ARIAL_PATH, size=40)
+    font = ImageFont.truetype(FONT_ARIAL_PATH, size=70)
     draw = ImageDraw.Draw(pil_image)
 
     _, _, text_width, text_height = font.getbbox(text=text, stroke_width=1)
     textX = int((img_width - text_width) / 2)
     textY = int((img_height - text_height - 50))
-    draw.text((textX, textY), text, font=font, stroke_width=1, stroke_fill=colors.BLACK)
+    draw.text((textX, textY), text, font=font, stroke_width=1, stroke_fill=color)
 
     image = np.asarray(pil_image)
     return image
@@ -335,7 +333,7 @@ def write_message(img: MatLike, message: str) -> MatLike:
 
 
 def draw_circles(
-    img: MatLike, num_circles: int, last_correct: int, wrong_move: bool = False
+    img: MatLike, num_circles: int, last_correct: int, wrong_move: bool = False, bounce_frame: int = 0
 ):
     height, width, _ = img.shape
     overlay = img.copy()
@@ -373,9 +371,16 @@ def draw_circles(
                 color_circle = colors.GRAY
                 text = "-"
 
+            bounce_effect = 0
+            if i == last_correct and bounce_frame > 0:
+                bounce_values = [0, 4, 7, 4, 0]  # Pode ajustar esse vetor pra suavidade
+                bounce_effect = bounce_values[bounce_frame % len(bounce_values)]
+
+            adjusted_radius = radius + bounce_effect
             center_x = start_x + i * (2 * radius + margin)
-            cv2.circle(img, (center_x, y_center), radius, color_circle, thickness=-1)
-            cv2.circle(img, (center_x, y_center), radius, thickness_border)
+            
+            cv2.circle(img, (center_x, y_center), adjusted_radius, color_circle, thickness=-1)
+            cv2.circle(img, (center_x, y_center), adjusted_radius, thickness_border)
 
             (text_width, text_height), _ = cv2.getTextSize(
                 text, PRIMARY_FONT, font_scale, font_thickness

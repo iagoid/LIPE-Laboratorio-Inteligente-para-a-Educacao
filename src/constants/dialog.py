@@ -50,14 +50,12 @@ DIALOG_START_GAME = [
         Text="Para ajudá-lo vocês deverão executar os passos de alguns algoritmos.",
         Character_Dir=CHARACTER_DIALOG,
         Italic=True,
-        Animations=[Animation(AnimateObj=ExplosionAnimation(), Position=(300, -100), Scale = 0.5)],
     ),
     Dialog(
         Text="Vamos lá?",
         Character_Dir=CHARACTER_DIALOG,
         Italic=True,
         Bold=True,
-        Animations=Animation(AnimateObj=ExplosionAnimation(), Position=(400, 500)),
     ),
 ]
 
@@ -154,11 +152,11 @@ DIALOG_CONDITION = [
         Character_Dir=CHARACTER_DIALOG,
     ),
     Dialog(
-        Text="Primeiramente serão mostradas qual movimento cada cor representa.",
+        Text="Primeiro, será mostrado qual movimento cada cor representa.",
         Character_Dir=CHARACTER_DIALOG,
     ),
     Dialog(
-        Text="Depois serão mostrados em tela a sequencia de cores.",
+        Text="Depois será mostrado em tela a sequencia de cores.",
         Character_Dir=CHARACTER_DIALOG,
     ),
     Dialog(

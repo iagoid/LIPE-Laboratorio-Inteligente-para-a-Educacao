@@ -25,5 +25,8 @@ class IGameMode(ABC):
     @abstractmethod
     def show_movement(self):
         pass
-            
+    
+    @abstractmethod
+    def show_repeat_msg(self):
+        pass        
    

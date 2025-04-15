@@ -14,10 +14,6 @@ from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 from src.constants.game_modes import *
 
-from src.face_recognition.face_detect import (
-    face_detection,
-    face_mesh,
-)
 from src.face_recognition.face_recognizer import FaceRecognizer
 from src.draw.draw import (
     initial_message,
@@ -29,6 +25,7 @@ from src.draw.draw import (
     show_player_image,
     apply_filter,
     write_message,
+    write_center_screen,
     show_correct_position,
     draw_confetti,
     show_score
@@ -43,7 +40,6 @@ from src.interfaces.game_mode import IGameMode
 DEFAULT_ENCODINGS_PATH = Path("output/encodings.pkl")
 
 screen_name = "Identificador de Movimentos"
-
 
 class Game:
     def __init__(self):       
@@ -64,10 +60,17 @@ class Game:
         self.score_player = 0
         
         self.sort_movement = True
+        self.number_start_message = 0
+        
+        self.count_player_Show = 0
+        self.show_team_id = "A"
+        
+        self.is_showing_start_messages = False
         self.is_showing_movements = False
         self.is_movement_wrong = False
         self.is_movement_identified = False
         self.is_draw_circles = False
+        self.bounce_frame = 0
         self.movement_correct = False
 
         self.mov_showing_seq = 0
@@ -102,7 +105,7 @@ class Game:
             if not searched_player is None: 
                 print(f"Player Consultado {searched_player}")
                 self.searching_player = False
-                if int(searched_player) == self.expected_player.Id or self.num_attempts_find_player > 10:
+                if int(searched_player) == self.expected_player.Id or self.num_attempts_find_player > NUMBERS_MAX_ATTEMPS_IDENTIFY_PLAYER:
                     print("Iniciando o Jogo")
                     self.player_found = True
                 else:
@@ -113,10 +116,70 @@ class Game:
 
         if self.my_identifier.is_correct_positioned():
             self.sort_movement = False
-            self.is_showing_movements = True
-            self.timer_is_showing_movements = time.perf_counter()
+            self.is_showing_start_messages = True
+            self.timer_message_start = time.perf_counter()
         else:
             self.img = show_correct_position(self.img)
+            
+    def show_start_message(self):
+        delta = time.perf_counter() - self.timer_message_start
+        if delta > TIME_SHOW_START_MESSAGE:
+            self.number_start_message += 1
+            self.timer_message_start = time.perf_counter()
+            
+        if self.number_start_message < len(START_MESSAGES):
+            message = START_MESSAGES[self.number_start_message]
+            self.img = draw_message_center_screen(self.img, message)
+        else:
+            self.is_showing_start_messages = False
+            self.is_showing_movements = True
+            self.timer_is_showing_movements = time.perf_counter()
+        
+    def show_player_teams(self):
+        
+        if self.show_team_id == "A":
+            color = colors.RED
+            team_name = "TIME VERMELHO"
+        else:
+            color = colors.BLUE
+            team_name = "TIME AZUL"
+            
+        delta = time.perf_counter() - self.timer_show_msg_teams
+        if delta < TIME_SHOW_PLAYER:
+            self.img = draw_message_center_screen(self.img, team_name, color)
+            self.timer_show_players_teams = time.perf_counter()
+            return
+        
+        team_filter = [player for player in  self.list_players if player.Team == self.show_team_id]
+        
+        delta = time.perf_counter() - self.timer_show_players_teams
+        if delta < TIME_SHOW_PLAYER:
+            player_id = team_filter[self.count_player_Show].Id
+            self.img = show_player_image(self.img, player_id, color)
+        else:
+            if len(team_filter) < self.count_player_Show:
+                self.count_player_Show += 1
+            
+            elif self.show_team_id == "A":
+                self.count_player_Show = 0
+                self.show_team_id = "B"
+                self.timer_show_msg_teams = time.perf_counter()
+                return
+
+            self.showed_players_teams = True
+            self.is_time_to_start = True
+            self.timer_is_time_to_start = time.perf_counter()
+
+    def time_to_start(self):
+
+        delta = time.perf_counter() - self.timer_show_players_teams
+        if delta < TIME_SHOW_PLAYER:
+            self.img = draw_message_center_screen(self.img, "HORA DE COMEÇAR")
+        
+        else:
+            self.is_time_to_start = False
+            self.is_showing_next_player = True
+            self.timer_show_player = time.perf_counter()
 
     def show_identified_movement(self):
         if self.movement_correct:
@@ -198,6 +261,7 @@ class Game:
     def show_end_score(self):
         delta = time.perf_counter() - self.timer_show_score
         if delta < TIME_SHOW_SCORE:
+            self.img[:, :] = colors.BLUE_LIGHT
             self.img = show_score(self.img, self.score_timeA * 5, self.score_timeB * 5)
         else:
             self.is_running = False
@@ -262,7 +326,7 @@ class Game:
         else:
             color = colors.BLUE
         
-        img_player = show_player_image(self.img, self.expected_player.Id, color)
+        img_player = show_player_image(self.img, self.expected_player.Id, color, "PRÓXIMO JOGADOR")
 
         if img_player is None:
             return
@@ -294,8 +358,6 @@ class Game:
         video_conf = VideoConfig(screen_name, width=width, height=height)
         video_conf.start()
 
-        self.timer_show_player = time.perf_counter()
-
         self.my_identifier = identifier.Identifier(self.game_mode.list_movements)
         self.my_identifier.sort_movements(self.game_mode.list_movements, self.number_movements)
         
@@ -304,6 +366,7 @@ class Game:
         )
 
         self.list_players = select_students()
+        self.timer_show_msg_teams = time.perf_counter()
         
         team = None
         for p in self.list_players:
@@ -315,9 +378,10 @@ class Game:
             p.Team = team     
             p.Active = True   
 
-        self.is_showing_next_player = True
         self.expected_player = self.list_players[0]
         self.expected_player.Movements = self.my_identifier.list_commands
+        
+        self.showed_players_teams = False
         
         print("---> " + str(self.expected_player.Id))
 
@@ -333,7 +397,12 @@ class Game:
                     self.real_image = video_conf.real_image()
                     
                     if self.is_draw_circles:
-                        draw_circles(self.img, self.number_movements, self.num_circles, self.is_movement_wrong)
+                        if self.bounce_frame >= 10:
+                            self.bounce_frame = 0
+                        else:
+                            self.bounce_frame += 1
+                            
+                        draw_circles(self.img, self.number_movements, self.num_circles, self.is_movement_wrong, self.bounce_frame)
                     
                         
                     if len(self.confetti_particles) > 0:
@@ -343,6 +412,12 @@ class Game:
                     elif self.is_end_game():
                         self.show_end_score()
                     
+                    elif not self.showed_players_teams:
+                        self.show_player_teams()
+                    
+                    elif self.is_time_to_start:
+                        self.time_to_start()
+                        
                     elif self.is_showing_next_player:
                         self.show_next_player()
                         
@@ -359,6 +434,9 @@ class Game:
                                 
                             elif self.sort_movement:
                                 self.player_is_positioned()
+                                
+                            elif self.is_showing_start_messages:
+                                self.show_start_message()
 
                             elif self.is_showing_movements:
                                 self.game_mode.show_movement()
