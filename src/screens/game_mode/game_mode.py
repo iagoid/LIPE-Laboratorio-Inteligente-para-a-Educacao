@@ -50,7 +50,7 @@ class GameMode:
 
         btn_iteration = pygame_gui.elements.UIButton(
             pygame.Rect(0, 120, 500, 100),
-            "ITERAÇÃO",
+            "REPETIÇÃO",
             self.manager,
             anchors={"centerx": "centerx", "centery": "centery"},
         )
