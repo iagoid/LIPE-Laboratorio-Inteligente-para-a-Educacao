@@ -3,6 +3,7 @@ from src.animation.explosion import ExplosionAnimation
 import os
 
 CHARACTER_DIALOG = "images" + os.sep + "robot" + os.sep + "lipe.png"
+CHARACTER_DIALOG2 = "images" + os.sep + "robot" + os.sep + "lipe2.png"
 
 DIALOG_START_GAME = [
     Dialog(
@@ -21,7 +22,7 @@ DIALOG_START_GAME = [
     ),
     Dialog(
         Text="Um algoritmo é escrito através de uma linguagem especial que o computador do robô consegue entender.",
-        Character_Dir=CHARACTER_DIALOG,
+        Character_Dir=CHARACTER_DIALOG2,
         Italic=True,
     ),
     Dialog(

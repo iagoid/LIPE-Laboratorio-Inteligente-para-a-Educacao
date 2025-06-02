@@ -13,6 +13,7 @@ from src.datatypes.confetti import Confetti
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 from src.constants.game_modes import *
+from src.datatypes.player import Player
 
 from src.face_recognition.face_recognizer import FaceRecognizer
 from src.draw.draw import (
@@ -221,39 +222,56 @@ class Game:
         self.is_showing_next_player = True
         self.timer_show_player = time.perf_counter()
     
-    def set_player(self, previous_player_id:int, remove_previous_player:bool):
-        previous_player_found = False
+    def get_next_player(self, current_player_id:int)-> Player | None:
         next_player = None
+        current_player_found = False
         
         for p in self.list_players:
-            if previous_player_found:
+            if current_player_found:
                 next_player = p
                 break
                 
-            if p.Id == previous_player_id:
-                previous_player_found = True
+            if p.Id == current_player_id:
+                current_player_found = True
+                
+        return next_player
+    
+    def set_player(self, previous_player_id:int, remove_previous_player:bool):
+        next_player = self.get_next_player(previous_player_id)
         
         if remove_previous_player: 
             self.list_players = [p for p in self.list_players if p.Id != previous_player_id]
-        
-        if not self.is_end_game():
-            if not next_player: #chamo o primeiro player novamente
-                self.add_new_movement()
-                next_player = self.list_players[0]
                 
-            if next_player.Movements is None:
-                self.my_identifier.sort_movements(self.game_mode.list_movements, self.number_movements)
-                next_player.Movements = self.my_identifier.list_commands
-            else:
-                self.my_identifier.list_commands = next_player.Movements
-                
-            self.expected_player = next_player
+        if not next_player: # todos os jogadores já jogaram o round
+            if self.is_last_round():
+                self.is_end_game = True
+                self.timer_show_score = time.perf_counter()
+                return
             
+            self.add_new_movement()
+            next_player = self.list_players[0]
+            
+        if next_player.Movements is None:
+            self.my_identifier.sort_movements(self.game_mode.list_movements, self.number_movements)
+            next_player.Movements = self.my_identifier.list_commands
         else:
-            self.timer_show_score = time.perf_counter()
+            self.my_identifier.list_commands = next_player.Movements
+            
+        self.expected_player = next_player
+            
         
-    def is_end_game(self)->bool:
-        if len(self.list_players) == 0:
+        
+    def is_last_round(self)->bool:
+        team_a_found = False
+        team_b_found = False
+        
+        for u in self.list_players:
+            if u.Team == "A":
+                team_a_found = True
+            elif u.Team == "B":
+                team_b_found = True
+
+        if not team_a_found or not team_b_found:
             return True
     
         return False
@@ -381,6 +399,7 @@ class Game:
         self.expected_player = self.list_players[0]
         self.expected_player.Movements = self.my_identifier.list_commands
         
+        self.is_end_game = False
         self.showed_players_teams = False
         
         print("---> " + str(self.expected_player.Id))
@@ -409,7 +428,7 @@ class Game:
                         self.img = draw_confetti(self.img, self.confetti_particles)
                         self.confetti_particles = [particle for particle in self.confetti_particles if particle.PosY < self.img.shape[0]]
                     
-                    elif self.is_end_game():
+                    elif self.is_end_game:
                         self.show_end_score()
                     
                     elif not self.showed_players_teams:
